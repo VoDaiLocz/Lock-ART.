@@ -30,6 +30,7 @@ def get_model():
 
 def image_to_tensor(image: Image.Image) -> torch.Tensor:
     """Convert PIL Image to tensor."""
+    image = image.convert("RGB")
     arr = np.array(image.resize((224, 224)), dtype=np.float32) / 255.0
     tensor = torch.from_numpy(arr).permute(2, 0, 1).unsqueeze(0)
     return tensor
@@ -37,7 +38,7 @@ def image_to_tensor(image: Image.Image) -> torch.Tensor:
 
 def tensor_to_image(tensor: torch.Tensor) -> Image.Image:
     """Convert tensor back to PIL Image."""
-    arr = tensor.squeeze(0).permute(1, 2, 0).numpy()
+    arr = tensor.detach().cpu().squeeze(0).permute(1, 2, 0).numpy()
     arr = np.clip(arr * 255, 0, 255).astype(np.uint8)
     return Image.fromarray(arr)
 

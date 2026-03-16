@@ -14,6 +14,19 @@ import numpy as np
 import torch
 from PIL import Image
 
+# Supported image file extensions
+SUPPORTED_EXTENSIONS = {".png", ".jpg", ".jpeg", ".webp", ".bmp", ".tiff", ".tif"}
+
+
+def _validate_image_extension(path: Path) -> None:
+    """Validate that the file has a supported image extension."""
+    suffix = path.suffix.lower()
+    if suffix not in SUPPORTED_EXTENSIONS:
+        raise ValueError(
+            f"Unsupported image format: '{suffix}'. "
+            f"Supported formats: {', '.join(sorted(SUPPORTED_EXTENSIONS))}"
+        )
+
 
 def load_image(
     path: Union[str, Path],
@@ -38,6 +51,7 @@ def load_image(
     path = Path(path)
     if not path.exists():
         raise FileNotFoundError(f"Image not found: {path}")
+    _validate_image_extension(path)
     
     # Load image and convert to RGB (handles RGBA, grayscale, etc.)
     image = Image.open(path).convert("RGB")
@@ -80,6 +94,7 @@ def save_image(
         >>> save_image(protected_img, "output/protected.png")
     """
     path = Path(path)
+    _validate_image_extension(path)
     path.parent.mkdir(parents=True, exist_ok=True)
     
     # Handle batch dimension
