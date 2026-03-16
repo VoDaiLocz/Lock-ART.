@@ -56,8 +56,8 @@ def calculate_psnr(
         modified = modified[0]
     
     # Rearrange from (C, H, W) to (H, W, C) if needed
-    # Detect channel-first: first dim is small (1, 3, or 4) and last dim is large
-    if original.ndim == 3 and original.shape[0] in (1, 3, 4) and original.shape[2] not in (1, 3, 4):
+    # Detect channel-first: first dim is a channel count (1, 3, or 4) and smaller than last dim
+    if original.ndim == 3 and original.shape[0] in (1, 3, 4) and original.shape[0] < original.shape[2]:
         original = np.transpose(original, (1, 2, 0))
         modified = np.transpose(modified, (1, 2, 0))
     
@@ -103,8 +103,8 @@ def calculate_ssim(
         modified = modified[0]
     
     # Rearrange from (C, H, W) to (H, W, C) if needed
-    # Detect channel-first: first dim is small (1, 3, or 4) and last dim is large
-    if original.ndim == 3 and original.shape[0] in (1, 3, 4) and original.shape[2] not in (1, 3, 4):
+    # Detect channel-first: first dim is a channel count (1, 3, or 4) and smaller than last dim
+    if original.ndim == 3 and original.shape[0] in (1, 3, 4) and original.shape[0] < original.shape[2]:
         original = np.transpose(original, (1, 2, 0))
         modified = np.transpose(modified, (1, 2, 0))
     
