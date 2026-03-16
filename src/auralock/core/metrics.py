@@ -56,7 +56,8 @@ def calculate_psnr(
         modified = modified[0]
     
     # Rearrange from (C, H, W) to (H, W, C) if needed
-    if original.shape[0] in [1, 3, 4]:  # Likely channel-first
+    # Detect channel-first: first dim is a channel count (1, 3, or 4) and smaller than last dim
+    if original.ndim == 3 and original.shape[0] in (1, 3, 4) and original.shape[0] < original.shape[2]:
         original = np.transpose(original, (1, 2, 0))
         modified = np.transpose(modified, (1, 2, 0))
     
@@ -102,7 +103,8 @@ def calculate_ssim(
         modified = modified[0]
     
     # Rearrange from (C, H, W) to (H, W, C) if needed
-    if original.shape[0] in [1, 3, 4]:
+    # Detect channel-first: first dim is a channel count (1, 3, or 4) and smaller than last dim
+    if original.ndim == 3 and original.shape[0] in (1, 3, 4) and original.shape[0] < original.shape[2]:
         original = np.transpose(original, (1, 2, 0))
         modified = np.transpose(modified, (1, 2, 0))
     
@@ -151,11 +153,14 @@ def calculate_lpips(
             "Install it with: pip install lpips"
         )
     
-    # Initialize LPIPS model (cached for performance)
-    if not hasattr(calculate_lpips, "_model"):
-        calculate_lpips._model = lpips.LPIPS(net=net)
+    # Initialize LPIPS model (cached per network type)
+    if not hasattr(calculate_lpips, "_models"):
+        calculate_lpips._models = {}
     
-    model = calculate_lpips._model
+    if net not in calculate_lpips._models:
+        calculate_lpips._models[net] = lpips.LPIPS(net=net)
+    
+    model = calculate_lpips._models[net]
     
     # Add batch dimension if needed
     if original.dim() == 3:

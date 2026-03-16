@@ -40,7 +40,7 @@ def protect(
     
     from auralock.core.image import load_image, save_image
     from auralock.core.metrics import get_quality_report
-    from auralock.attacks import FGSM
+    from auralock.attacks import FGSM, PGD
     
     # Validate input
     if not input_path.exists():
@@ -52,6 +52,10 @@ def protect(
     
     if not 0.01 <= epsilon <= 0.1:
         console.print("[yellow]Warning:[/yellow] Epsilon outside recommended range (0.01-0.1)")
+    
+    if method not in ("fgsm", "pgd"):
+        console.print(f"[red]Error:[/red] Unknown method: {method}. Use 'fgsm' or 'pgd'.")
+        raise typer.Exit(1)
     
     console.print(f"\n[bold blue]🛡️ AI Shield - Image Protection[/bold blue]\n")
     
@@ -76,9 +80,8 @@ def protect(
         
         if method == "fgsm":
             attack = FGSM(model, epsilon=epsilon)
-        else:
-            console.print(f"[red]Error:[/red] Unknown method: {method}")
-            raise typer.Exit(1)
+        elif method == "pgd":
+            attack = PGD(model, epsilon=epsilon)
         
         protected = attack(image)
         progress.update(task, completed=True, description=f"✅ {method.upper()} applied")
