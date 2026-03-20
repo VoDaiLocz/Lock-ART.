@@ -67,6 +67,19 @@ The `Protection Score` is an internal proxy derived from embedding and style sim
 4. **Benchmark further**: compare profiles locally or generate DreamBooth / LoRA benchmark manifests.
 5. **Iterate honestly**: tune profiles, compare results, and record where the current approach still falls short.
 
+```mermaid
+flowchart LR
+    A["Original artwork or subject split"] --> B["AuraLock CLI / service layer"]
+    B --> C["Protect or batch run"]
+    C --> D["Protected outputs"]
+    C --> E["JSON reports"]
+    D --> F["Analyze quality and drift"]
+    E --> F
+    F --> G["Local profile benchmark"]
+    G --> H["DreamBooth / LoRA benchmark planning"]
+    H --> I["Compare results and iterate"]
+```
+
 ## Quick Start
 
 ### Prerequisites
