@@ -1,0 +1,117 @@
+[build-system]
+requires = ["hatchling", "editables"]
+build-backend = "hatchling.build"
+
+[project]
+name = "auralock"
+version = "0.1.0"
+description = "Bức màn bảo vệ vô hình cho tác phẩm nghệ thuật - Protect your artwork from AI style mimicry"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.10"
+authors = [
+    { name = "locfaker", email = "locfaker@example.com" }
+]
+keywords = [
+    "adversarial",
+    "machine-learning",
+    "image-protection",
+    "style-transfer",
+    "ai-safety",
+    "auralock"
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Scientific/Engineering :: Image Processing",
+]
+
+dependencies = [
+    "torch>=2.0.0",
+    "torchvision>=0.15.0",
+    "numpy>=1.24.0",
+    "pillow>=10.0.0",
+    "opencv-python>=4.8.0",
+    "scikit-image>=0.21.0",
+    "typer>=0.9.0",
+    "rich>=13.0.0",
+]
+
+[project.optional-dependencies]
+ui = [
+    "gradio>=4.0.0",
+]
+benchmark = [
+    "diffusers",
+    "accelerate",
+    "transformers",
+    "peft",
+    "safetensors",
+]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "black>=23.0.0",
+    "ruff>=0.1.0",
+    "mypy>=1.5.0",
+    "ipykernel>=6.25.0",
+    "jupyter>=1.0.0",
+    "matplotlib>=3.7.0",
+]
+all = [
+    "auralock[ui,benchmark,dev]",
+]
+
+[project.scripts]
+auralock = "auralock.cli:main"
+auralock-webui = "auralock.ui:launch_app"
+
+[project.urls]
+Homepage = "https://github.com/locfaker/AuraLock"
+Documentation = "https://github.com/locfaker/AuraLock#readme"
+Repository = "https://github.com/locfaker/AuraLock"
+Issues = "https://github.com/locfaker/AuraLock/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/auralock"]
+
+[tool.black]
+line-length = 88
+target-version = ["py310", "py311", "py312"]
+
+[tool.ruff]
+line-length = 88
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # Pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade
+]
+ignore = [
+    "E501",  # line too long (handled by black)
+    "B008",  # Typer uses Argument/Option declarations in defaults
+]
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["src/tests"]
+python_files = ["test_*.py"]
+python_functions = ["test_*"]
+addopts = "-v --cov=auralock --cov-report=term-missing"

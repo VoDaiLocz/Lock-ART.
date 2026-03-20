@@ -1,0 +1,28 @@
+services:
+  auralock-benchmark:
+    build:
+      context: .
+      dockerfile: Dockerfile.benchmark
+      args:
+        BASE_IMAGE: ${AURALOCK_BENCHMARK_BASE_IMAGE:-pytorch/pytorch:2.5.1-cuda12.4-cudnn9-runtime}
+    working_dir: /workspace
+    shm_size: "16gb"
+    environment:
+      HF_HOME: /cache/huggingface
+      HUGGINGFACE_HUB_CACHE: /cache/huggingface/hub
+      TRANSFORMERS_CACHE: /cache/huggingface/transformers
+    volumes:
+      - ./:/workspace
+      - auralock-hf-cache:/cache/huggingface
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: ${AURALOCK_GPU_COUNT:-all}
+              capabilities:
+                - gpu
+    command: ["auralock", "version"]
+
+volumes:
+  auralock-hf-cache:
