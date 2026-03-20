@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <title>AuraLock README Gallery</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        background: #ffffff;
+        font-family: "IBM Plex Sans", sans-serif;
+        color: #1f2937;
+      }
+
+      .sheet {
+        width: 1280px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 18px;
+      }
+
+      .card {
+        border-radius: 18px;
+        overflow: hidden;
+        border: 1px solid rgba(148, 163, 184, 0.25);
+        background: linear-gradient(180deg, #ffffff, #f8fafc);
+        box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
+      }
+
+      .card.image-card img {
+        width: 100%;
+        display: block;
+        object-fit: cover;
+        aspect-ratio: 1.45 / 1;
+      }
+
+      .body {
+        padding: 14px 16px 16px;
+      }
+
+      .title-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .title-row strong {
+        font-size: 22px;
+        letter-spacing: -0.03em;
+      }
+
+      .kpi {
+        color: #2563eb;
+        font-size: 13px;
+        font-weight: 700;
+        white-space: nowrap;
+      }
+
+      .copy {
+        margin-top: 8px;
+        color: #64748b;
+        font-size: 14px;
+        line-height: 1.6;
+      }
+
+      .report-card {
+        padding: 24px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        min-height: 100%;
+      }
+
+      .report-card h3 {
+        margin: 0;
+        font-size: 30px;
+        letter-spacing: -0.04em;
+      }
+
+      .report-card p {
+        margin: 10px 0 0;
+        color: #64748b;
+        font-size: 15px;
+        line-height: 1.7;
+      }
+
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+        margin-top: 24px;
+      }
+
+      .stat {
+        border-radius: 14px;
+        background: #eff6ff;
+        border: 1px solid rgba(59, 130, 246, 0.14);
+        padding: 14px;
+      }
+
+      .label {
+        color: #64748b;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .value {
+        margin-top: 8px;
+        font-size: 28px;
+        font-weight: 700;
+        color: #0f172a;
+      }
+
+      .footer {
+        margin-top: 20px;
+        padding-top: 16px;
+        border-top: 1px solid rgba(148, 163, 184, 0.18);
+        color: #64748b;
+        font-size: 14px;
+        line-height: 1.7;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="sheet">
+      <section class="grid">
+        <article class="card image-card">
+          <img src="../../output/demo/horse_painting_original.jpg" alt="Original artwork" />
+          <div class="body">
+            <div class="title-row">
+              <strong>Original</strong>
+              <div class="kpi">clean baseline</div>
+            </div>
+            <div class="copy">
+              Source artwork used for the local protect and analyze flow.
+            </div>
+          </div>
+        </article>
+
+        <article class="card image-card">
+          <img src="../../output/demo/horse_painting_balanced_protected.jpg" alt="Balanced protected output" />
+          <div class="body">
+            <div class="title-row">
+              <strong>Balanced</strong>
+              <div class="kpi">42.1 / 100</div>
+            </div>
+            <div class="copy">
+              Better visual preservation while still introducing measurable drift.
+            </div>
+          </div>
+        </article>
+
+        <article class="card image-card">
+          <img src="../../output/demo/horse_painting_preview_768_blindfold.jpg" alt="Blindfold protected output" />
+          <div class="body">
+            <div class="title-row">
+              <strong>Blindfold</strong>
+              <div class="kpi">61.1 / 100</div>
+            </div>
+            <div class="copy">
+              Stronger anti-readability behavior with a much larger fidelity trade-off.
+            </div>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="report-card">
+            <div>
+              <h3>Report Snapshot</h3>
+              <p>
+                Local reports are used to compare presets and study trade-offs,
+                not to claim universal protection against every AI model.
+              </p>
+            </div>
+
+            <div class="stats">
+              <div class="stat">
+                <div class="label">Balanced</div>
+                <div class="value">42.1</div>
+              </div>
+              <div class="stat">
+                <div class="label">Blindfold</div>
+                <div class="value">61.1</div>
+              </div>
+              <div class="stat">
+                <div class="label">Collective</div>
+                <div class="value">22.8</div>
+              </div>
+            </div>
+
+            <div class="footer">
+              The repository focuses on reproducible study workflows: protect,
+              analyze, benchmark, compare, and iterate.
+            </div>
+          </div>
+        </article>
+      </section>
+    </main>
+  </body>
+</html>
