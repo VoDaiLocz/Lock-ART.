@@ -18,14 +18,14 @@
 </p>
 
 <p align="center">
-  <a href="#project-overview">Project Overview</a> •
-  <a href="#system-snapshots">System Snapshots</a> •
-  <a href="#workflow">Workflow</a> •
-  <a href="#quick-start">Quick Start</a> •
+  <a href="#project-overview">Project Overview</a> |
+  <a href="#system-snapshots">System Snapshots</a> |
+  <a href="#workflow">Workflow</a> |
+  <a href="#quick-start">Quick Start</a> |
   <a href="#minimum-requirements">Requirements</a>
 </p>
 
-## ⚡ Project Overview
+## Project Overview
 
 **AuraLock** is a study repository for artwork cloaking and anti-mimicry evaluation. It is designed for learning, experimentation, and benchmark-driven iteration, not for making impossible promises that every vision model can be fully blocked forever.
 
@@ -39,13 +39,13 @@ The repository is organized around a practical study loop:
 > You provide: artwork, a profile choice, and a benchmark target.  
 > AuraLock returns: protected outputs, analysis reports, and reproducible benchmark artifacts.
 
-## 🖼️ System Snapshots
+## System Snapshots
 
 <p align="center">
   <img src="docs/assets/readme-gallery.png" alt="AuraLock system snapshots" width="100%" />
 </p>
 
-## 📊 Current Study Snapshot
+## Current Study Snapshot
 
 Current local report highlights:
 
@@ -59,7 +59,7 @@ Current local report highlights:
 
 The `Protection Score` is an internal proxy derived from embedding and style similarity after robustness transforms. It is useful for relative comparisons inside this repository, not as a universal guarantee against all AI systems.
 
-## 🧭 Workflow
+## Workflow
 
 1. **Prepare input**: choose a single artwork, a folder, or a subject split such as `set_B`.
 2. **Apply protection**: run `protect`, `batch`, or `batch --collective` with the profile you want to study.
@@ -67,7 +67,7 @@ The `Protection Score` is an internal proxy derived from embedding and style sim
 4. **Benchmark further**: compare profiles locally or generate DreamBooth / LoRA benchmark manifests.
 5. **Iterate honestly**: tune profiles, compare results, and record where the current approach still falls short.
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 
@@ -134,7 +134,7 @@ auralock webui --host 127.0.0.1 --port 7860
 
 Open `http://127.0.0.1:7860` in your browser.
 
-## 📦 Minimum Requirements
+## Minimum Requirements
 
 ### Core CPU workflows
 
@@ -165,7 +165,7 @@ This level is enough for:
 
 Manifest planning can run on CPU. Real DreamBooth or LoRA execution should be treated as a GPU workflow.
 
-## 🧪 Profiles
+## Profiles
 
 | Profile | Goal | Default direction |
 |---------|------|-------------------|
@@ -178,37 +178,37 @@ Manifest planning can run on CPU. Real DreamBooth or LoRA execution should be tr
 
 Adaptive CLI mode saves the output and report even when thresholds are missed, but returns a non-zero exit code so an automation pipeline does not mistake a weak result for a success.
 
-## 🗂️ Repository Layout
+## Repository Layout
 
 ```text
 Lock-ART./
-├── .github/workflows/
-├── docs/
-├── notebooks/
-├── src/
-│   ├── auralock/
-│   │   ├── attacks/
-│   │   ├── benchmarks/
-│   │   ├── core/
-│   │   ├── services/
-│   │   ├── ui/
-│   │   └── cli.py
-│   └── tests/
-├── Dockerfile
-├── Dockerfile.benchmark
-├── docker-compose.yml
-├── docker-compose.benchmark.yml
-└── pyproject.toml
++-- .github/workflows/
++-- docs/
++-- notebooks/
++-- src/
+|   +-- auralock/
+|   |   +-- attacks/
+|   |   +-- benchmarks/
+|   |   +-- core/
+|   |   +-- services/
+|   |   +-- ui/
+|   |   \-- cli.py
+|   \-- tests/
++-- Dockerfile
++-- Dockerfile.benchmark
++-- docker-compose.yml
++-- docker-compose.benchmark.yml
+\-- pyproject.toml
 ```
 
-## 📚 Notes and Documentation
+## Notes and Documentation
 
 - [Product Audit](docs/PRODUCT_AUDIT.md)
 - [Implementation Plan](docs/IMPLEMENTATION_PLAN.md)
 - [Research Roadmap](docs/RESEARCH_ROADMAP.md)
 - [Colab Benchmark Notebook](notebooks/AuraLock_LoRA_Benchmark_Colab.ipynb)
 
-## ✅ Verification
+## Verification
 
 ```bash
 pytest -q
@@ -216,10 +216,10 @@ ruff check src
 black --check src
 ```
 
-## 🙏 Acknowledgements
+## Acknowledgements
 
 AuraLock is a learning project shaped by ideas discussed around adversarial artwork protection and anti-mimicry evaluation, especially directions associated with Mist-v2, StyleGuard, Anti-DreamBooth, and related open research.
 
-## 📄 License
+## License
 
 This project is distributed under the **MIT License**. See [LICENSE](LICENSE).
