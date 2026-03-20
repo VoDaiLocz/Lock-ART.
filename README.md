@@ -31,7 +31,7 @@
 - increase the cost of feature extraction or style mimicry workflows
 - benchmark those trade-offs with repeatable reports instead of subjective demos
 
-The hero visual below is rendered from real local outputs in this repository through Playwright.
+The hero visual below is rendered from a local HTML asset in this repository through Playwright.
 
 <p align="center">
   <img src="docs/assets/readme-overview.png" alt="AuraLock hero overview" width="100%" />
