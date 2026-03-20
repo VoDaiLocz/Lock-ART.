@@ -1,0 +1,408 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <title>AuraLock README Hero</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        background:
+          radial-gradient(circle at top, rgba(124, 149, 255, 0.08), transparent 28%),
+          linear-gradient(180deg, #eef2f9 0%, #e7edf7 100%);
+        color: #1e293b;
+        font-family: "IBM Plex Sans", sans-serif;
+      }
+
+      .frame {
+        width: 1600px;
+        min-height: 960px;
+        padding: 28px;
+      }
+
+      .hero {
+        min-height: 904px;
+        border-radius: 36px;
+        background:
+          linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(249, 251, 255, 0.98)),
+          #ffffff;
+        border: 1px solid rgba(148, 163, 184, 0.22);
+        box-shadow:
+          0 30px 80px rgba(30, 41, 59, 0.12),
+          inset 0 1px 0 rgba(255, 255, 255, 0.8);
+        padding: 42px 54px 44px;
+      }
+
+      .topline {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 16px;
+        border-radius: 999px;
+        background: rgba(59, 130, 246, 0.08);
+        color: #3155a4;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .topline::before {
+        content: "";
+        width: 9px;
+        height: 9px;
+        border-radius: 999px;
+        background: linear-gradient(135deg, #5b7cff, #14b8a6);
+      }
+
+      .brand {
+        margin-top: 34px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 30px;
+      }
+
+      .brand-mark {
+        width: 236px;
+        height: 236px;
+        display: grid;
+        place-items: center;
+      }
+
+      .wordmark-wrap {
+        display: flex;
+        align-items: center;
+        gap: 28px;
+      }
+
+      .brand-divider {
+        width: 2px;
+        height: 132px;
+        background: linear-gradient(180deg, rgba(148, 163, 184, 0.15), rgba(148, 163, 184, 0.85), rgba(148, 163, 184, 0.15));
+      }
+
+      .wordmark {
+        font-family: "Space Grotesk", sans-serif;
+        font-size: 104px;
+        line-height: 0.95;
+        letter-spacing: -0.075em;
+        color: #646b7b;
+      }
+
+      .pill-row {
+        margin-top: 26px;
+        display: flex;
+        justify-content: center;
+      }
+
+      .ranking-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 22px;
+        border-radius: 18px;
+        border: 1.5px solid rgba(91, 124, 255, 0.56);
+        color: #5030b4;
+        background: rgba(255, 255, 255, 0.86);
+        font-size: 13px;
+        font-weight: 600;
+      }
+
+      .ranking-pill strong {
+        font-size: 30px;
+        line-height: 1;
+      }
+
+      .tagline {
+        margin-top: 28px;
+        text-align: center;
+      }
+
+      .tagline .vi {
+        font-size: 20px;
+        color: #273449;
+      }
+
+      .tagline .en {
+        margin-top: 8px;
+        font-size: 18px;
+        color: #445168;
+        font-style: italic;
+      }
+
+      .subbrand {
+        margin-top: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 14px;
+        color: #667085;
+        font-size: 15px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+      }
+
+      .subbrand::before,
+      .subbrand::after {
+        content: "";
+        width: 72px;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(100, 116, 139, 0.5), transparent);
+      }
+
+      .badges {
+        margin-top: 26px;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        border-radius: 10px;
+        font-size: 13px;
+        font-weight: 600;
+        color: #ffffff;
+        box-shadow: 0 6px 16px rgba(15, 23, 42, 0.12);
+      }
+
+      .badge span {
+        padding: 2px 7px;
+        border-radius: 6px;
+        background: rgba(255, 255, 255, 0.18);
+        font-size: 12px;
+      }
+
+      .b-green { background: #159947; }
+      .b-blue { background: #2563eb; }
+      .b-sky { background: #0ea5e9; }
+      .b-teal { background: #0f766e; }
+      .b-amber { background: #d97706; }
+      .b-slate { background: #475569; }
+
+      .links {
+        margin-top: 24px;
+        text-align: center;
+        color: #3155a4;
+        font-size: 16px;
+      }
+
+      .links span {
+        margin: 0 10px;
+      }
+
+      .showcase {
+        margin-top: 42px;
+        padding-top: 30px;
+        border-top: 1px solid rgba(148, 163, 184, 0.22);
+      }
+
+      .showcase-head {
+        text-align: center;
+      }
+
+      .showcase-head strong {
+        display: block;
+        font-size: 29px;
+        letter-spacing: -0.04em;
+        color: #1f2937;
+      }
+
+      .showcase-head span {
+        display: block;
+        margin-top: 8px;
+        color: #64748b;
+        font-size: 15px;
+      }
+
+      .cards {
+        margin-top: 24px;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 18px;
+      }
+
+      .card {
+        border-radius: 24px;
+        overflow: hidden;
+        background: linear-gradient(180deg, #ffffff, #f7f9fd);
+        border: 1px solid rgba(148, 163, 184, 0.22);
+        box-shadow: 0 18px 36px rgba(30, 41, 59, 0.1);
+      }
+
+      .card-image {
+        aspect-ratio: 1.4 / 1;
+        background: #e2e8f0;
+      }
+
+      .card img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+
+      .card-body {
+        padding: 16px 18px 18px;
+      }
+
+      .card-title {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .card-title strong {
+        font-size: 23px;
+        letter-spacing: -0.04em;
+      }
+
+      .card-kpi {
+        text-align: right;
+        color: #1d4ed8;
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+      .card-copy {
+        margin-top: 10px;
+        color: #64748b;
+        font-size: 14px;
+        line-height: 1.6;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="frame">
+      <main class="hero">
+        <div class="topline">AuraLock Learning Project</div>
+
+        <section class="brand">
+          <div class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 260 260" width="236" height="236" role="img">
+              <defs>
+                <linearGradient id="ring" x1="0%" x2="100%" y1="0%" y2="100%">
+                  <stop offset="0%" stop-color="#8dc5ff" />
+                  <stop offset="55%" stop-color="#4c78c8" />
+                  <stop offset="100%" stop-color="#22497e" />
+                </linearGradient>
+                <linearGradient id="lockFill" x1="0%" x2="100%" y1="0%" y2="100%">
+                  <stop offset="0%" stop-color="#7dd3fc" />
+                  <stop offset="100%" stop-color="#0f766e" />
+                </linearGradient>
+              </defs>
+              <ellipse cx="148" cy="128" rx="84" ry="94" fill="#eef5ff" stroke="url(#ring)" stroke-width="8"></ellipse>
+              <ellipse cx="148" cy="128" rx="67" ry="76" fill="none" stroke="#95bfe7" stroke-width="4" opacity="0.9"></ellipse>
+              <path d="M90 176c19-26 46-42 77-45 29-3 56 5 80 20-17 24-41 40-69 47-30 6-61-1-88-22Z" fill="url(#ring)" opacity="0.22"></path>
+              <path d="M63 90c-22 2-42 12-56 30 16-2 30 0 43 6-18 3-31 12-41 28 23-2 41 4 57 18 12 10 28 14 45 13-15-13-23-29-23-49 0-18 7-34 21-46-17 1-32 1-46 0Z" fill="url(#ring)"></path>
+              <path d="M182 78h-22V65c0-18-14-32-32-32s-32 14-32 32v13H74c-8 0-14 6-14 14v50c0 8 6 14 14 14h108c8 0 14-6 14-14V92c0-8-6-14-14-14Zm-65-13c0-6 5-11 11-11s11 5 11 11v13h-22V65Zm11 49c8 0 14 6 14 14 0 5-2 9-5 11v15h-18v-15c-3-2-5-6-5-11 0-8 6-14 14-14Z" fill="url(#lockFill)" opacity="0.92"></path>
+            </svg>
+          </div>
+
+          <div class="wordmark-wrap">
+            <div class="brand-divider"></div>
+            <div class="wordmark">AuraLock</div>
+          </div>
+        </section>
+
+        <div class="pill-row">
+          <div class="ranking-pill">
+            <strong>v0.1</strong>
+            <div>
+              <div>ALPHA LEARNING TOOLKIT</div>
+              <div>Package auralock • CLI • Collective subject experiments</div>
+            </div>
+          </div>
+        </div>
+
+        <section class="tagline">
+          <div class="vi">A learning-focused toolkit for artwork cloaking, style-drift experiments, and benchmark-driven iteration.</div>
+          <div class="en">Built for study, reproducibility, and honest anti-mimicry evaluation rather than marketing claims.</div>
+        </section>
+
+        <div class="subbrand">CLI-first • Colab-ready • Docker benchmark path</div>
+
+        <div class="badges">
+          <div class="badge b-green">tests <span>75 passed</span></div>
+          <div class="badge b-blue">version <span>0.1.0</span></div>
+          <div class="badge b-teal">package <span>auralock</span></div>
+          <div class="badge b-sky">status <span>alpha</span></div>
+          <div class="badge b-amber">release <span>not tagged</span></div>
+          <div class="badge b-slate">license <span>MIT</span></div>
+        </div>
+
+        <div class="links">Quick Start<span>|</span>CLI<span>|</span>Profiles<span>|</span>Benchmark</div>
+
+        <section class="showcase">
+          <div class="showcase-head">
+            <strong>Real output snapshots from the repo</strong>
+            <span>Original artwork, balanced protection, and blindfold obfuscation in one clean strip</span>
+          </div>
+
+          <div class="cards">
+            <article class="card">
+              <div class="card-image">
+                <img src="../../output/demo/horse_painting_original.jpg" alt="Original artwork" />
+              </div>
+              <div class="card-body">
+                <div class="card-title">
+                  <strong>Original</strong>
+                  <div class="card-kpi">clean baseline</div>
+                </div>
+                <div class="card-copy">Reference artwork used in the local demo set and benchmark-facing documentation flow.</div>
+              </div>
+            </article>
+
+            <article class="card">
+              <div class="card-image">
+                <img src="../../output/demo/horse_painting_balanced_protected.jpg" alt="Balanced protected output" />
+              </div>
+              <div class="card-body">
+                <div class="card-title">
+                  <strong>Balanced</strong>
+                  <div class="card-kpi">49.0 / 100</div>
+                </div>
+                <div class="card-copy">Cleaner visual preservation for publishing. PSNR 36.72 and SSIM 0.9739 on the latest local report.</div>
+              </div>
+            </article>
+
+            <article class="card">
+              <div class="card-image">
+                <img src="../../output/demo/horse_painting_preview_768_blindfold.jpg" alt="Blindfold protected output" />
+              </div>
+              <div class="card-body">
+                <div class="card-title">
+                  <strong>Blindfold</strong>
+                  <div class="card-kpi">61.1 / 100</div>
+                </div>
+                <div class="card-copy">Aggressive obfuscation when anti-readability matters more than fidelity. Stronger, but visibly harsher.</div>
+              </div>
+            </article>
+          </div>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "auralock"
 version = "0.1.0"
-description = "Bức màn bảo vệ vô hình cho tác phẩm nghệ thuật - Protect your artwork from AI style mimicry"
+description = "A learning-focused artwork cloaking toolkit for anti-mimicry experiments"
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.10"
@@ -74,10 +74,10 @@ auralock = "auralock.cli:main"
 auralock-webui = "auralock.ui:launch_app"
 
 [project.urls]
-Homepage = "https://github.com/locfaker/AuraLock"
-Documentation = "https://github.com/locfaker/AuraLock#readme"
-Repository = "https://github.com/locfaker/AuraLock"
-Issues = "https://github.com/locfaker/AuraLock/issues"
+Homepage = "https://github.com/VoDaiLocz/Lock-ART."
+Documentation = "https://github.com/VoDaiLocz/Lock-ART.#readme"
+Repository = "https://github.com/VoDaiLocz/Lock-ART."
+Issues = "https://github.com/VoDaiLocz/Lock-ART./issues"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/auralock"]
