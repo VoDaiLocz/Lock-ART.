@@ -10,8 +10,8 @@
 <p align="center">
   <img src="https://img.shields.io/badge/tests-75%20passed-16a34a" alt="75 tests passed" />
   <img src="https://img.shields.io/badge/version-0.1.0-2563eb" alt="Version 0.1.0" />
-  <img src="https://img.shields.io/badge/package-auralock-0f766e" alt="Package auralock" />
-  <img src="https://img.shields.io/badge/release-not%20tagged-lightgrey" alt="Release not tagged" />
+  <img src="https://img.shields.io/badge/package-ghcr.io%2Fvodailocz%2Flock--art-0f766e" alt="GHCR package" />
+  <img src="https://img.shields.io/badge/release-v0.1.0-2563eb" alt="Release v0.1.0" />
   <img src="https://img.shields.io/badge/status-alpha-f59e0b" alt="Alpha status" />
   <img src="https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12-2563eb" alt="Python 3.10 to 3.12" />
   <img src="https://img.shields.io/badge/license-MIT-eab308" alt="MIT License" />
