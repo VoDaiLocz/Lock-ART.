@@ -1,8 +1,10 @@
-# AuraLock
+<p align="center">
+  <img src="docs/assets/readme-overview.png" alt="AuraLock logo banner" width="760" />
+</p>
 
 <p align="center">
-  <strong>A learning-focused artwork cloaking toolkit for anti-mimicry experiments.</strong><br/>
-  Study single-image protection, directory workflows, and Anti-DreamBooth-aligned subject-set benchmarking from one repository.
+  <strong>A learning-focused toolkit for artwork cloaking, style-drift experiments, and benchmark-driven iteration.</strong><br/>
+  Built for study, reproducibility, and honest anti-mimicry evaluation rather than marketing claims.
 </p>
 
 <p align="center">
@@ -20,7 +22,7 @@
   <a href="#cli-usage">CLI</a> •
   <a href="#profiles">Profiles</a> •
   <a href="#benchmark-snapshot">Benchmarks</a> •
-  <a href="#tested-environment">Tested Environment</a>
+  <a href="#minimum-requirements">Requirements</a>
 </p>
 
 ## Overview
@@ -30,12 +32,6 @@
 - keep images usable for humans
 - increase the cost of feature extraction or style mimicry workflows
 - benchmark those trade-offs with repeatable reports instead of subjective demos
-
-The hero visual below is rendered from a local HTML asset in this repository through Playwright.
-
-<p align="center">
-  <img src="docs/assets/readme-overview.png" alt="AuraLock hero overview" width="100%" />
-</p>
 
 ## Project Snapshot
 
@@ -181,33 +177,36 @@ flowchart LR
     H --> I["Metrics, manifests, and review"]
 ```
 
-## Tested Environment
+## Minimum Requirements
 
-This repository has been exercised locally on the following machine:
+### Core CPU workflows
 
-| Item | Value |
-|------|-------|
-| OS | `Windows 10 Pro 64-bit (10.0.19045)` |
-| CPU | `Intel Core i7-6600U @ 2.60GHz` |
-| CPU topology | `2 cores / 4 threads` |
-| RAM | `8.4 GB` installed |
-| GPU | `Intel HD Graphics 520` |
-| Local Python | `3.12.10` |
+| Item | Minimum |
+|------|---------|
+| OS | Windows 10/11, Linux, or macOS |
+| Python | `3.10+` |
+| CPU | 2 cores |
+| RAM | 8 GB |
+| GPU | not required for `protect`, `batch`, or `analyze` |
+| Disk | 5 GB free for the core install and reports |
 
-What runs on this machine:
+This level is enough for:
 
 - single-image protection on CPU
 - directory batch protection on CPU
-- analysis and report generation
+- report generation and analysis
 - README asset generation with Playwright
 
-What does **not** run well on this machine:
+### Recommended environment
 
-- real DreamBooth / LoRA fine-tuning
-- CUDA benchmark execution
-- Docker GPU benchmark runtime
+| Workflow | Recommended |
+|----------|-------------|
+| General CPU experimentation | 4+ CPU cores, 16 GB RAM |
+| Optional web UI | the core CPU setup plus a modern browser |
+| Manifest planning / dry-run benchmarks | 16 GB RAM and extra disk space for checkpoints |
+| Real DreamBooth / LoRA execution | CUDA-capable NVIDIA GPU, 12 GB+ VRAM, 16-32 GB system RAM, or a Colab / cloud GPU runtime |
 
-For actual DreamBooth or LoRA execution, use a CUDA-capable NVIDIA GPU or the provided Colab / Docker benchmark path.
+Manifest planning can run on CPU. Real DreamBooth or LoRA execution should be treated as a GPU workflow.
 
 ## Project Structure
 
