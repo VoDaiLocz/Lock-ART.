@@ -59,7 +59,7 @@ The following issue drafts focus only on runtime correctness, architectural risk
   - `/home/runner/work/Lock-ART./Lock-ART./src/auralock/services/protection.py` (`_build_attack`, benchmark methods)  
   - `/home/runner/work/Lock-ART./Lock-ART./src/auralock/attacks/pgd.py`  
   - `/home/runner/work/Lock-ART./Lock-ART./src/auralock/attacks/stylecloak.py`
-- **Exact risk:** Stochastic attack paths (for example random starts) are not seeded/recorded in benchmark flow, so repeated benchmark runs can differ without traceability.
+- **Exact risk:** Stochastic attack paths (e.g., random starts) are not seeded/recorded in benchmark flow, so repeated benchmark runs can differ without traceability.
 - **User-visible impact:** Reported profile wins/losses may drift between runs, reducing trust in benchmark conclusions.
 - **Proposed change:** Add benchmark seed control and include seed + deterministic settings in report metadata.
 - **Acceptance criteria:**
@@ -82,4 +82,3 @@ The following issue drafts focus only on runtime correctness, architectural risk
   - A benchmark run with one failing input still returns completed entries for successful inputs.
   - Report includes failure list with file/profile/error context.
   - CLI exits non-zero when any benchmark job fails.
-
