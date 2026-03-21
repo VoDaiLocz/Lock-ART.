@@ -58,6 +58,64 @@ AuraLock started as a clean research/demo repo with working algorithms, but it w
 - Benchmark against actual LoRA / DreamBooth / style-mimicry pipelines
 - Add purification robustness tests against external repos such as `robust-style-mimicry`
 
+## Audit: Test Coverage Gap Issues
+
+### 1) Regression baseline coverage for protection outputs
+- **Missing test coverage area:** No stable regression baselines for `protect` output metrics (quality/style/readability) across code changes.
+- **Risk if not covered:** Silent behavior drift can change protection strength or image quality without detection.
+- **Suggested test strategy:** Add deterministic fixture inputs and snapshot-style assertions for key report values with bounded tolerances per profile.
+- **Acceptance criteria:** CI fails when baseline metrics move outside agreed tolerance bands for the same fixture/profile combination.
+- **Labels:** `testing`, `regression`, `quality`
+
+### 2) Cross-module integration flow validation
+- **Missing test coverage area:** Incomplete end-to-end flow tests covering `load -> protect -> analyze -> report/save` across service and CLI boundaries.
+- **Risk if not covered:** Individually passing unit tests can still hide broken integration contracts and malformed outputs.
+- **Suggested test strategy:** Add integration tests that execute full workflows on sample images and assert final artifacts + report structure.
+- **Acceptance criteria:** A single integration suite validates expected files, report keys, and non-empty analysis metrics for successful runs.
+- **Labels:** `testing`, `integration`, `cli`
+
+### 3) CLI end-to-end command matrix expansion
+- **Missing test coverage area:** Limited end-to-end coverage for `protect`, `analyze`, `demo`, `webui`, and argument/profile combinations.
+- **Risk if not covered:** User-facing commands can regress even if internal APIs remain correct.
+- **Suggested test strategy:** Use `CliRunner` to cover happy-path and invalid-argument matrices, including profile presets and report options.
+- **Acceptance criteria:** Each public CLI command has at least one passing end-to-end test and one explicit failure-path test.
+- **Labels:** `testing`, `cli`, `e2e`
+
+### 4) Docker workflow runtime validation
+- **Missing test coverage area:** Docker assets exist, but tests do not validate container build/run workflows for application and benchmark images.
+- **Risk if not covered:** Published images may build but fail at runtime due to dependency, entrypoint, or path-mapping issues.
+- **Suggested test strategy:** Add CI job(s) to build both Dockerfiles and run smoke commands (`auralock --help`, benchmark preflight) in containers.
+- **Acceptance criteria:** CI verifies image build + smoke execution for `Dockerfile` and `Dockerfile.benchmark`.
+- **Labels:** `testing`, `docker`, `ci`
+
+### 5) Release/package verification checks
+- **Missing test coverage area:** No automated validation for wheel/sdist creation, installability, script entry points, and version metadata consistency.
+- **Risk if not covered:** Broken releases can be published with unusable artifacts or mismatched package metadata.
+- **Suggested test strategy:** Add release-gate workflow to build artifacts, install from built wheel in a clean env, and verify `auralock --version`.
+- **Acceptance criteria:** Release CI must pass package build, install, and CLI smoke checks before publish steps proceed.
+- **Labels:** `testing`, `release`, `packaging`
+
+### 6) Benchmark reproducibility assertions
+- **Missing test coverage area:** Benchmark tests emphasize planning/manifests but do not assert reproducibility under fixed seeds/configuration.
+- **Risk if not covered:** Benchmark comparisons may be noisy or non-repeatable, reducing confidence in reported improvements.
+- **Suggested test strategy:** Add reproducibility tests that run benchmark routines twice with fixed settings and compare summary metrics/manifests.
+- **Acceptance criteria:** Repeated benchmark runs under fixed seed/config produce matching manifest content and stable summary outputs.
+- **Labels:** `testing`, `benchmark`, `reproducibility`
+
+### 7) Failure-path and resiliency coverage
+- **Missing test coverage area:** Partial failure-path tests; gaps remain for file I/O permissions, missing/corrupt inputs, and partial batch failures.
+- **Risk if not covered:** Real-world errors can produce unclear messages, silent skips, or incomplete outputs.
+- **Suggested test strategy:** Add explicit negative tests for invalid files, write failures, and per-file batch error handling with assertive messaging.
+- **Acceptance criteria:** Failure-path tests assert non-zero exit behavior (or controlled continuation) and clear user-facing error diagnostics.
+- **Labels:** `testing`, `reliability`, `error-handling`
+
+### 8) Image output validation after save/load roundtrips
+- **Missing test coverage area:** Current image tests are lightweight; gaps remain in post-save/load validation for shape, dtype, bounds, and format fidelity.
+- **Risk if not covered:** Saved outputs may degrade or become invalid while tests still pass.
+- **Suggested test strategy:** Add roundtrip tests per supported extension validating size, channel layout, dtype/range, and expected tolerance envelopes.
+- **Acceptance criteria:** Save/load tests cover supported formats and verify output invariants + bounded pixel drift where lossy encoding applies.
+- **Labels:** `testing`, `image-io`, `validation`
+
 ## Why This Matters
 
 `MiroFish` looks professional because it combines code with deployment, environment setup, workflows, and clearer system boundaries. AuraLock is still smaller in scope, but it now has a cleaner runtime boundary, real batch/CLI behavior, deployment scaffolding, and a default protection mode aligned with the actual artist-protection goal instead of remaining just a classifier-attack demo.
