@@ -1,6 +1,7 @@
 # Benchmark Integrity Audit - GitHub Issue Drafts
 
 The following are strict, technical, ready-to-file issue drafts for benchmark integrity and anti-mimicry evaluation quality.
+Line-level evidence references were verified against this repository state on 2026-03-21; re-check line numbers against the latest commit when filing issues.
 
 ---
 
