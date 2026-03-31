@@ -1,160 +1,117 @@
-# 🛡️ AuraLock - Kế Hoạch Triển Khai
+# 🛡️ AuraLock - Kế Hoạch Triển Khai (Cập nhật)
 
-> **Tác giả**: locfaker  
-> **Ngày tạo**: 2024-12-23  
-> **Phiên bản**: 1.0.0
-
----
-
-## 📋 Tổng Quan Dự Án
-
-### Vấn Đề Cần Giải Quyết
-- AI generative models (Stable Diffusion, Midjourney, DALL-E) có thể học và sao chép phong cách nghệ thuật
-- Nghệ sĩ mất quyền kiểm soát tác phẩm khi bị AI crawl và train
-- Cần một "lá chắn vô hình" bảo vệ artwork
-
-### Giải Pháp
-Tạo công cụ thêm **adversarial perturbation** vào hình ảnh:
-- ✅ Mắt người: Nhìn bình thường, chất lượng cao
-- ❌ AI nhìn: Bị nhiễu loạn, không học được style
+> **Repository**: `VoDaiLocz/Lock-ART.`  
+> **Phiên bản hiện tại**: `0.1.0`  
+> **Mục tiêu**: tài liệu hóa trạng thái triển khai thực tế và hướng phát triển ngắn hạn.
 
 ---
 
-## 🎯 Mục Tiêu Đã Hoàn Thành
+## 1) Tổng quan
 
-### ✅ Phase 1: Core Implementation
-- [x] Project structure & setup
-- [x] Image loading/saving utilities
-- [x] Quality metrics (PSNR, SSIM)
-- [x] FGSM attack implementation
-- [x] PGD attack implementation
-- [x] Unit tests (23 tests passed)
+AuraLock là toolkit phục vụ **nghiên cứu bảo vệ artwork** trước nguy cơ bị mô hình sinh ảnh học và bắt chước phong cách.
 
-### ✅ Phase 2: User Interface
-- [x] CLI với Typer + Rich
-- [x] Web UI với Gradio
-- [x] Demo scripts
-
-### 🔄 Phase 3: Coming Soon
-- [ ] Style-specific cloaking
-- [ ] Batch processing
-- [ ] GPU acceleration
-- [ ] Docker deployment
+Nguyên tắc của dự án:
+- Ưu tiên **thử nghiệm có thể lặp lại** (reproducible)
+- Đo lường bằng **chỉ số minh bạch** (PSNR, SSIM, protection proxy)
+- Không đưa ra tuyên bố tuyệt đối kiểu “chặn mọi AI”
 
 ---
 
-## 🛠️ Tech Stack
+## 2) Trạng thái triển khai hiện tại
 
-| Component | Technology |
-|-----------|------------|
-| Language | Python 3.10+ |
-| ML Framework | PyTorch 2.9 |
-| Web UI | Gradio 6.x |
-| CLI | Typer + Rich |
-| Image Processing | Pillow, OpenCV |
-| Metrics | scikit-image |
-| Testing | Pytest |
+### ✅ Core và protection workflow
+- Image I/O và metrics nền tảng
+- FGSM/PGD và pipeline bảo vệ theo profile
+- Các profile sử dụng nhanh: `safe`, `balanced`, `strong`, `subject`, `fortress`, `blindfold`
+- Chế độ adaptive guardrails cho CLI `protect`
 
----
+### ✅ CLI, batch và benchmark
+- CLI đầy đủ cho `protect`, `analyze`, `batch`, `benchmark`
+- Batch theo thư mục và chế độ `--collective` cho subject set
+- Xuất report JSON cho workflow tự động
 
-## 📁 Cấu Trúc Project
+### ✅ UI và đóng gói
+- Web UI (Gradio) ở dạng tùy chọn (`.[ui]`)
+- Entry point CLI và webui
+- Dockerfile cho runtime cơ bản và benchmark runtime
 
-```
-AuraLock/
-├── docs/
-│   ├── IMPLEMENTATION_PLAN.md    # File này
-│   └── RESEARCH_ROADMAP.md       # Lộ trình học tập
-├── src/
-│   ├── auralock/
-│   │   ├── __init__.py
-│   │   ├── cli.py                # Command line interface
-│   │   ├── core/
-│   │   │   ├── image.py          # Image utilities
-│   │   │   └── metrics.py        # PSNR, SSIM, LPIPS
-│   │   ├── attacks/
-│   │   │   ├── base.py           # Base attack class
-│   │   │   ├── fgsm.py           # FGSM implementation
-│   │   │   └── pgd.py            # PGD implementation
-│   │   └── ui/
-│   │       └── gradio_app.py     # Web UI
-│   └── tests/
-│       ├── test_image.py
-│       ├── test_fgsm.py
-│       └── test_metrics.py
-├── examples/
-│   └── demo.py                   # Demo script
-├── notebooks/
-│   └── 01_image_basics.ipynb     # Tutorial
-├── output/                       # Generated outputs
-├── pyproject.toml               # Project config
-├── README.md
-├── LICENSE
-└── .gitignore
-```
+### ✅ Kiểm thử và CI
+- Test suite bằng `pytest`
+- Lint/format bằng `ruff` và `black`
+- CI workflow trên GitHub Actions
 
 ---
 
-## 🚀 Hướng Dẫn Sử Dụng
+## 3) Mục tiêu ngắn hạn (roadmap thực thi)
 
-### Cài đặt
+### Ưu tiên cao
+- Bổ sung logging có cấu trúc cho từng run
+- Tăng chất lượng tổng hợp report đa-run
+- Xác thực benchmark runtime trên GPU thực tế
+
+### Ưu tiên trung bình
+- Củng cố benchmark dataset và báo cáo chuẩn hóa
+- Tăng end-to-end coverage cho các luồng CLI chính
+- Chuẩn hóa release/changelog
+
+### Ưu tiên nghiên cứu
+- Đánh giá sâu hơn với các pipeline LoRA / DreamBooth thực tế
+- Mở rộng robustness checks với các quy trình mimicry phổ biến
+
+---
+
+## 4) Hướng dẫn vận hành nhanh
+
+### Cài đặt phát triển
 ```bash
-git clone https://github.com/locfaker/AuraLock.git
-cd AuraLock
-python -m venv venv
-.\venv\Scripts\activate
+git clone https://github.com/VoDaiLocz/Lock-ART.
+cd Lock-ART.
+python -m venv .venv
+.\.venv\Scripts\activate
 pip install -e ".[dev]"
 ```
 
-### CLI Commands
+### Lệnh thường dùng
 ```bash
-# Bảo vệ ảnh
-AuraLock protect image.png -o protected.png -e 0.03
-
-# Demo
-AuraLock demo
-
-# Web UI
-python -m auralock.ui.gradio_app
+auralock protect artwork.png -o protected.png --profile balanced
+auralock analyze original.png protected.png --report reports/analyze.json
+auralock batch ./artworks ./protected --recursive
+auralock benchmark artwork.png --profiles safe,balanced,strong --report reports/benchmark.json
 ```
 
-### Chạy Tests
+### Chạy kiểm tra chất lượng
 ```bash
-pytest src/tests/ -v
+pytest -q
+ruff check src
+black --check src
 ```
 
 ---
 
-## 📊 Kết Quả Benchmark
+## 5) Cấu trúc dự án (rút gọn)
 
-| Epsilon | Attack Success | PSNR (dB) | SSIM | Chất lượng |
-|---------|----------------|-----------|------|------------|
-| 0.01 | 100% | 40.0 | 0.9994 | Excellent |
-| 0.03 | 100% | 30.5 | 0.9948 | Acceptable |
-| 0.05 | 100% | 26.2 | 0.9858 | Poor |
-
-**Khuyến nghị**: Sử dụng epsilon = 0.03 để cân bằng giữa hiệu quả và chất lượng.
-
----
-
-## 📚 Tài Liệu Tham Khảo
-
-### Papers
-1. [FGSM - Explaining and Harnessing Adversarial Examples](https://arxiv.org/abs/1412.6572)
-2. [PGD - Towards Deep Learning Models Resistant to Adversarial Attacks](https://arxiv.org/abs/1706.06083)
-3. [Glaze - Protecting Artists from Style Mimicry](https://arxiv.org/abs/2302.04222)
-
-### Libraries
-- [Adversarial Robustness Toolbox](https://github.com/Trusted-AI/adversarial-robustness-toolbox)
-- [PyTorch FGSM Tutorial](https://pytorch.org/tutorials/beginner/fgsm_tutorial.html)
-
----
-
-## 👤 Thông Tin Tác Giả
-
-**locfaker**
-- GitHub: [@locfaker](https://github.com/locfaker)
-- Project: AuraLock - Bảo vệ nghệ thuật khỏi AI
+```text
+Lock-ART./
++-- docs/
++-- notebooks/
++-- src/
+|   +-- auralock/
+|   |   +-- attacks/
+|   |   +-- benchmarks/
+|   |   +-- core/
+|   |   +-- services/
+|   |   +-- ui/
+|   |   \-- cli.py
+|   \-- tests/
++-- .github/workflows/
++-- Dockerfile
++-- Dockerfile.benchmark
++-- pyproject.toml
+\-- README.md
+```
 
 ---
 
-*Cập nhật lần cuối: 2024-12-23*
+## 6) Ghi chú
+
+Tài liệu này mô tả trạng thái triển khai theo hướng sản phẩm nghiên cứu. Để xem hướng dẫn sử dụng đầy đủ và snapshot benchmark hiện tại, ưu tiên tham chiếu `README.md`.
