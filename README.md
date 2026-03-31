@@ -219,6 +219,15 @@ Lock-ART./
 - [Product Audit](docs/PRODUCT_AUDIT.md)
 - [Implementation Plan](docs/IMPLEMENTATION_PLAN.md)
 - [Research Roadmap](docs/RESEARCH_ROADMAP.md)
+- [System Design Hub](docs/system-design/README.md)
+
+## Project Standards
+
+- [Contributing Guide](CONTRIBUTING.md)
+- [Code of Conduct](CODE_OF_CONDUCT.md)
+- [Security Policy](SECURITY.md)
+- [Research Roadmap](docs/RESEARCH_ROADMAP.md)
+- [System Design Hub](docs/system-design/README.md)
 - [Colab Benchmark Notebook](notebooks/AuraLock_LoRA_Benchmark_Colab.ipynb)
 
 ## Verification
