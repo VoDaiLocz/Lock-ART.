@@ -47,6 +47,9 @@ The repository is organized around a practical study loop:
 
 ## Current Study Snapshot
 
+> **⚠️ Important Note on Protection Score:**
+> The `Protection Score` is a **proxy metric** that measures drift in ResNet18 feature space. It is **NOT validated** against real-world mimicry attacks like DreamBooth or LoRA. This score is useful for relative comparisons within this repository only, not as a universal guarantee of protection effectiveness. Real-world effectiveness has not been empirically validated.
+
 Current local report highlights:
 
 | Run | Protection Score | PSNR | SSIM | Notes |
@@ -56,8 +59,6 @@ Current local report highlights:
 | `fortress` | `53.2` | `29.08` | `0.7858` | more aggressive, visibly harsher output |
 | `blindfold` | `61.1` | `26.53` | `0.6114` | strongest current anti-readability preset, largest fidelity cost |
 | `collective n000050 / set_B` | `22.8` avg | `37.78` avg | `0.9666` avg | correct benchmark direction, objective still needs tuning |
-
-The `Protection Score` is an internal proxy derived from embedding and style similarity after robustness transforms. It is useful for relative comparisons inside this repository, not as a universal guarantee against all AI systems.
 
 ## Workflow
 

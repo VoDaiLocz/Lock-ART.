@@ -131,3 +131,70 @@ class TestQualityReport:
         report = get_quality_report(img1, img2)
 
         assert report["overall_quality"] == "Poor"
+
+
+class TestProtectionReadabilityReport:
+    """Tests for protection readability report with warning metadata."""
+
+    def test_protection_report_includes_warnings(self):
+        """Test that protection report includes warning metadata."""
+        from auralock.core.metrics import (
+            PROTECTION_SCORE_DISCLAIMER,
+            PROTECTION_SCORE_METRIC_TYPE,
+            PROTECTION_SCORE_WARNING,
+            get_protection_readability_report,
+        )
+
+        original = torch.rand(1, 3, 100, 100)
+        modified = original + torch.randn_like(original) * 0.1
+        modified = torch.clamp(modified, 0, 1)
+
+        report = get_protection_readability_report(original, modified)
+
+        # Check that warning metadata is present
+        assert "warning" in report
+        assert "metric_type" in report
+        assert "disclaimer" in report
+
+        # Check that values match constants
+        assert report["warning"] == PROTECTION_SCORE_WARNING
+        assert report["metric_type"] == PROTECTION_SCORE_METRIC_TYPE
+        assert report["disclaimer"] == PROTECTION_SCORE_DISCLAIMER
+
+    def test_protection_report_assessment_includes_proxy_space(self):
+        """Test that assessment labels include '(proxy space)' suffix."""
+        from auralock.core.metrics import get_protection_readability_report
+
+        original = torch.rand(1, 3, 100, 100)
+        modified = original + torch.randn_like(original) * 0.1
+        modified = torch.clamp(modified, 0, 1)
+
+        report = get_protection_readability_report(original, modified)
+
+        # Check that assessment includes proxy space indicator
+        assert "(proxy space)" in report["assessment"]
+
+    def test_protection_report_has_all_expected_keys(self):
+        """Test that protection report has all expected keys including new warning fields."""
+        from auralock.core.metrics import get_protection_readability_report
+
+        original = torch.rand(1, 3, 100, 100)
+        modified = original + torch.randn_like(original) * 0.1
+        modified = torch.clamp(modified, 0, 1)
+
+        report = get_protection_readability_report(original, modified)
+
+        # Original keys
+        assert "style_similarity" in report
+        assert "embedding_similarity" in report
+        assert "robust_style_similarity" in report
+        assert "robust_embedding_similarity" in report
+        assert "protection_score" in report
+        assert "assessment" in report
+        assert "transform_style_similarities" in report
+        assert "transform_embedding_similarities" in report
+
+        # New warning keys
+        assert "metric_type" in report
+        assert "warning" in report
+        assert "disclaimer" in report
