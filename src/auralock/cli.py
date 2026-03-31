@@ -97,6 +97,11 @@ def _render_readability_table(report: dict[str, object]) -> Table:
         f"{report['protection_score']:.1f}/100",
     )
     table.add_row("Assessment", str(report["assessment"]))
+
+    # Add warning row if present
+    if "warning" in report:
+        table.add_row("⚠️  Warning", str(report["warning"]))
+
     return table
 
 
@@ -433,6 +438,13 @@ def protect(
     console.print(_render_protection_table(result))
     console.print(_render_quality_table(result.quality_report))
     console.print(_render_readability_table(result.protection_report))
+
+    # Print prominent warning about protection score
+    if "warning" in result.protection_report:
+        console.print(f"\n[yellow]{result.protection_report['warning']}[/yellow]")
+        if "disclaimer" in result.protection_report:
+            console.print(f"[dim]{result.protection_report['disclaimer']}[/dim]\n")
+
     if report is not None:
         payload = result.to_report_dict(output_path=output_path)
         if adaptive_requirements is not None:
@@ -485,6 +497,17 @@ def analyze(
 
     console.print(_render_quality_table(analysis_report["quality_report"]))
     console.print(_render_readability_table(analysis_report["protection_report"]))
+
+    # Print prominent warning about protection score
+    if "warning" in analysis_report["protection_report"]:
+        console.print(
+            f"\n[yellow]{analysis_report['protection_report']['warning']}[/yellow]"
+        )
+        if "disclaimer" in analysis_report["protection_report"]:
+            console.print(
+                f"[dim]{analysis_report['protection_report']['disclaimer']}[/dim]\n"
+            )
+
     if report_path is not None:
         _write_json_report(
             report_path,
@@ -578,6 +601,16 @@ def batch(
         progress.update(task, completed=True, description="Batch processing completed")
 
     console.print(_render_batch_table(summary))
+
+    # Print prominent warning about protection scores in batch
+    from auralock.core.metrics import (
+        PROTECTION_SCORE_DISCLAIMER,
+        PROTECTION_SCORE_WARNING,
+    )
+
+    console.print(f"\n[yellow]{PROTECTION_SCORE_WARNING}[/yellow]")
+    console.print(f"[dim]{PROTECTION_SCORE_DISCLAIMER}[/dim]\n")
+
     if report is not None:
         _write_json_report(report, summary.to_report_dict())
         console.print(f"[green]Report saved to:[/green] {report}")
@@ -646,6 +679,16 @@ def benchmark(
         progress.update(task, completed=True, description="Benchmark completed")
 
     console.print(_render_profile_summary_table(summary.profile_summaries))
+
+    # Print prominent warning about protection scores in benchmark summary
+    from auralock.core.metrics import (
+        PROTECTION_SCORE_DISCLAIMER,
+        PROTECTION_SCORE_WARNING,
+    )
+
+    console.print(f"\n[yellow]{PROTECTION_SCORE_WARNING}[/yellow]")
+    console.print(f"[dim]{PROTECTION_SCORE_DISCLAIMER}[/dim]\n")
+
     if report is not None:
         _write_json_report(report, summary.to_report_dict())
         console.print(f"[green]Report saved to:[/green] {report}")

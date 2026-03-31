@@ -24,6 +24,18 @@ from auralock.core.style import (
     load_default_style_feature_extractor,
 )
 
+# Protection Score Warning Constants
+PROTECTION_SCORE_WARNING = (
+    "⚠️  Protection Score is a proxy metric. "
+    "Real-world effectiveness is NOT validated."
+)
+PROTECTION_SCORE_METRIC_TYPE = "proxy_unvalidated"
+PROTECTION_SCORE_DISCLAIMER = (
+    "This score measures drift in ResNet18 feature space, "
+    "NOT actual mimicry prevention against real-world attacks like DreamBooth or LoRA. "
+    "Use for relative comparisons within this repository only."
+)
+
 
 def calculate_psnr(
     original: torch.Tensor | np.ndarray,
@@ -311,11 +323,11 @@ def get_protection_readability_report(
     )
 
     if protection_score >= 45:
-        assessment = "Strong"
+        assessment = "Strong (proxy space)"
     elif protection_score >= 25:
-        assessment = "Moderate"
+        assessment = "Moderate (proxy space)"
     else:
-        assessment = "Weak"
+        assessment = "Weak (proxy space)"
 
     return {
         "style_similarity": style_similarity,
@@ -324,6 +336,9 @@ def get_protection_readability_report(
         "robust_embedding_similarity": robust_embedding_similarity,
         "protection_score": protection_score,
         "assessment": assessment,
+        "metric_type": PROTECTION_SCORE_METRIC_TYPE,
+        "warning": PROTECTION_SCORE_WARNING,
+        "disclaimer": PROTECTION_SCORE_DISCLAIMER,
         "transform_style_similarities": transform_style_similarities,
         "transform_embedding_similarities": transform_embedding_similarities,
     }
