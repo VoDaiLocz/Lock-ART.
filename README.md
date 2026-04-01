@@ -150,9 +150,18 @@ auralock batch ./.cache_ref/Anti-DreamBooth/data/n000050/set_B ./protected_subje
   --working-size 384 ^
   --report reports/batch-collective.json
 
-# Compare multiple profiles
-auralock benchmark artwork.png --profiles safe,balanced,strong --report reports/benchmark.json
+# Create a leak-free split manifest then benchmark on the test split
+auralock split create ./artworks --output splits.json
+auralock benchmark artwork.png ^
+  --profiles safe,balanced,strong ^
+  --split-manifest splits.json ^
+  --split-type test ^
+  --report reports/benchmark.json
 ```
+
+### Split Management
+
+Use `auralock split create` to generate deterministic train/val/test manifests (with hashes and ratios) and `auralock split validate` to assert that splits are non-overlapping. The `benchmark` command now requires a `--split-manifest` and `--split-type` so reported scores always reference a declared dataset split.
 
 ### Optional Web UI
 

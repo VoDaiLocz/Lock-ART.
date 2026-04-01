@@ -12,7 +12,7 @@ from auralock.cli import app
 
 def test_build_docker_lora_benchmark_plan_maps_workspace_paths(tmp_path: Path):
     """Docker planner should convert workspace-local paths into container paths."""
-    from auralock.benchmarks import (
+    from auralock.benchmarks.docker_runtime import (
         DockerLoraBenchmarkConfig,
         build_docker_lora_benchmark_plan,
     )
@@ -80,7 +80,7 @@ def test_build_docker_lora_benchmark_plan_rejects_paths_outside_workspace(
     tmp_path: Path,
 ):
     """Docker planner should reject paths that are not covered by the workspace mount."""
-    from auralock.benchmarks import (
+    from auralock.benchmarks.docker_runtime import (
         DockerLoraBenchmarkConfig,
         build_docker_lora_benchmark_plan,
     )
@@ -122,7 +122,7 @@ def test_build_docker_lora_benchmark_plan_requires_diffusers_model_dir(
     tmp_path: Path,
 ):
     """Docker planner should reject model paths that are not Diffusers directories."""
-    from auralock.benchmarks import (
+    from auralock.benchmarks.docker_runtime import (
         DockerLoraBenchmarkConfig,
         build_docker_lora_benchmark_plan,
     )
@@ -159,7 +159,7 @@ def test_build_docker_lora_benchmark_plan_requires_diffusers_model_dir(
 
 def test_benchmark_lora_docker_cli_runs_build_and_execute(monkeypatch, tmp_path: Path):
     """CLI should orchestrate Docker build, GPU check, and benchmark execution."""
-    from auralock.benchmarks import DockerLoraBenchmarkPlan
+    from auralock.benchmarks.docker_runtime import DockerLoraBenchmarkPlan
 
     recorded: list[list[str]] = []
 

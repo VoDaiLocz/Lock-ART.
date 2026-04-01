@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import warnings
 from dataclasses import dataclass
 from pathlib import Path
 from time import perf_counter
@@ -13,6 +14,7 @@ import torch.nn.functional as F
 from PIL import Image
 
 from auralock.attacks import FGSM, PGD, StyleCloak
+from auralock.benchmarks.splits import SplitMetadata, SplitType
 from auralock.core.image import (
     SUPPORTED_EXTENSIONS,
     image_to_tensor,
@@ -34,6 +36,8 @@ def _to_builtin(value: Any) -> Any:
     """Convert tensors, paths, and numpy scalars into JSON-friendly values."""
     if isinstance(value, Path):
         return str(value)
+    if isinstance(value, SplitMetadata):
+        return value.to_dict()
     if isinstance(value, dict):
         return {str(key): _to_builtin(item) for key, item in value.items()}
     if isinstance(value, (list, tuple)):
@@ -200,24 +204,30 @@ class BenchmarkSummary:
     image_count: int
     entries: list[BenchmarkEntry]
     profile_summaries: dict[str, dict[str, object]]
+    split_metadata: SplitMetadata | None = None
 
     def to_report_dict(self) -> dict[str, object]:
         """Serialize the full benchmark report."""
-        return _to_builtin(
-            {
-                "input_path": self.input_path,
-                "image_count": self.image_count,
-                "entries": [entry.to_report_dict() for entry in self.entries],
-                "profile_summaries": self.profile_summaries,
-                "validation_metadata": {
-                    "is_validated": False,
-                    "validation_status": "not_validated",
-                    "validation_method": None,
-                    "validation_date": None,
-                    "notes": "Protection metrics are proxy measurements not validated against real attacks like DreamBooth or LoRA.",
-                },
-            }
-        )
+        payload: dict[str, object] = {
+            "input_path": self.input_path,
+            "image_count": self.image_count,
+            "entries": [entry.to_report_dict() for entry in self.entries],
+            "profile_summaries": self.profile_summaries,
+            "validation_metadata": {
+                "is_validated": False,
+                "validation_status": "not_validated",
+                "validation_method": None,
+                "validation_date": None,
+                "notes": "Protection metrics are proxy measurements not validated against real attacks like DreamBooth or LoRA.",
+            },
+        }
+        if self.split_metadata is not None:
+            payload["split_metadata"] = self.split_metadata
+            payload["split_type"] = self.split_metadata.split_type.value
+            payload["split_hash"] = self.split_metadata.split_hash
+            payload["dataset_name"] = self.split_metadata.dataset_name
+            payload["dataset_version"] = self.split_metadata.dataset_version
+        return _to_builtin(payload)
 
 
 class ProtectionService:
@@ -712,16 +722,51 @@ class ProtectionService:
             "protection_report": protection_report,
         }
 
+    def _validate_split_membership(
+        self, image_paths: list[Path], split_metadata: SplitMetadata
+    ) -> None:
+        """Ensure benchmark targets belong to the declared split."""
+        missing = split_metadata.contains_all(image_paths)
+        if missing:
+            raise ValueError(
+                "Benchmark inputs are missing from the declared split manifest: "
+                + ", ".join(missing)
+            )
+        if (
+            split_metadata.dataset_root is not None
+            and split_metadata.dataset_root.strip() != ""
+        ):
+            root = Path(split_metadata.dataset_root).resolve()
+            outside_root = [
+                str(path)
+                for path in image_paths
+                if not Path(path).resolve().is_relative_to(root)
+            ]
+            if outside_root:
+                raise ValueError(
+                    "Benchmark inputs must be within dataset_root to avoid leakage: "
+                    + ", ".join(outside_root)
+                )
+        if split_metadata.split_type != SplitType.TEST:
+            warnings.warn(
+                f"Benchmarking on non-test split '{split_metadata.split_type.value}'. "
+                "Use TEST split for final evaluation to avoid optimistic bias.",
+                stacklevel=2,
+            )
+
     def _collect_benchmark_entries(
         self,
         image_paths: list[Path],
         *,
         input_path: Path,
         profiles: tuple[str, ...],
+        split_metadata: SplitMetadata,
     ) -> BenchmarkSummary:
         """Benchmark the requested profiles on a list of images."""
         if not image_paths:
             raise ValueError("No supported images were found to benchmark.")
+
+        self._validate_split_membership(image_paths, split_metadata)
 
         entries: list[BenchmarkEntry] = []
         for image_path in image_paths:
@@ -774,6 +819,7 @@ class ProtectionService:
             image_count=len(image_paths),
             entries=entries,
             profile_summaries=profile_summaries,
+            split_metadata=split_metadata,
         )
 
     def benchmark_file(
@@ -781,8 +827,9 @@ class ProtectionService:
         input_path: str | Path,
         *,
         profiles: tuple[str, ...] = ("safe", "balanced", "strong"),
+        split_metadata: SplitMetadata,
     ) -> BenchmarkSummary:
-        """Benchmark one image against multiple named profiles."""
+        """Benchmark one image against multiple named profiles with split tracking."""
         candidate = Path(input_path)
         if not candidate.exists() or not candidate.is_file():
             raise ValueError("input_path must be an existing image file.")
@@ -792,6 +839,7 @@ class ProtectionService:
             [candidate],
             input_path=candidate,
             profiles=profiles,
+            split_metadata=split_metadata,
         )
 
     def benchmark_directory(
@@ -800,8 +848,9 @@ class ProtectionService:
         *,
         profiles: tuple[str, ...] = ("safe", "balanced", "strong"),
         recursive: bool = False,
+        split_metadata: SplitMetadata,
     ) -> BenchmarkSummary:
-        """Benchmark all supported images in a directory across profiles."""
+        """Benchmark all supported images in a directory across profiles with split tracking."""
         input_path = Path(input_dir)
         if not input_path.exists() or not input_path.is_dir():
             raise ValueError("input_dir must be an existing directory.")
@@ -816,6 +865,7 @@ class ProtectionService:
             image_paths,
             input_path=input_path,
             profiles=profiles,
+            split_metadata=split_metadata,
         )
 
     def protect_directory(
