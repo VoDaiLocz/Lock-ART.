@@ -69,8 +69,16 @@ def test_subject_benchmark_harness_dry_run_uses_set_b_as_published_split(
     }
     assert [job["profile"] for job in manifest.jobs] == ["clean", "safe"]
     assert manifest.jobs[0]["variant"] == "clean_published"
-    assert str(manifest.jobs[0]["published_dir"]).endswith("datasets\\published\\clean")
-    assert str(manifest.jobs[1]["published_dir"]).endswith("datasets\\published\\safe")
+    assert Path(manifest.jobs[0]["published_dir"]).parts[-3:] == (
+        "datasets",
+        "published",
+        "clean",
+    )
+    assert Path(manifest.jobs[1]["published_dir"]).parts[-3:] == (
+        "datasets",
+        "published",
+        "safe",
+    )
 
 
 def test_subject_benchmark_harness_executes_collective_protection_for_set_b(

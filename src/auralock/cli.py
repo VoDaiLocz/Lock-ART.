@@ -15,18 +15,30 @@ from rich.progress import Progress, SpinnerColumn, TextColumn
 from rich.table import Table
 
 from auralock import __version__
-from auralock.benchmarks import (
+from auralock.benchmarks.antidreambooth import (
     DEFAULT_ANTI_DREAMBOOTH_CLASS_PROMPT,
     DEFAULT_ANTI_DREAMBOOTH_INFER_SCRIPT,
     DEFAULT_ANTI_DREAMBOOTH_INSTANCE_PROMPT,
     DEFAULT_ANTI_DREAMBOOTH_TRAIN_SCRIPT,
+    AntiDreamBoothSubjectBenchmarkHarness,
+)
+from auralock.benchmarks.docker_runtime import (
     DEFAULT_BENCHMARK_BASE_IMAGE,
     DEFAULT_COMPOSE_FILE,
     DEFAULT_SERVICE_NAME,
-    AntiDreamBoothSubjectBenchmarkHarness,
     DockerLoraBenchmarkConfig,
-    LoraBenchmarkHarness,
     build_docker_lora_benchmark_plan,
+)
+from auralock.benchmarks.lora import (
+    LoraBenchmarkHarness,
+)
+from auralock.benchmarks.splits import (
+    SplitType,
+    collect_supported_images,
+    create_random_split,
+    load_split_manifest,
+    save_split_manifest,
+    validate_no_overlap,
 )
 from auralock.core.image import save_image
 from auralock.services import (
@@ -40,6 +52,12 @@ app = typer.Typer(
     help="Protect your artwork from AI style mimicry with a consistent production pipeline.",
     add_completion=False,
 )
+split_app = typer.Typer(
+    name="split",
+    help="Manage dataset split manifests for leak-free benchmarking.",
+    add_completion=False,
+)
+app.add_typer(split_app, name="split")
 console = Console()
 
 
@@ -305,6 +323,80 @@ def _adaptive_thresholds_met(
         and float(result.quality_report.get("ssim", float("-inf"))) >= min_ssim
         and float(result.quality_report.get("psnr_db", float("-inf"))) >= min_psnr_db
     )
+
+
+@split_app.command("create")
+def split_create(
+    dataset_root: Path = typer.Argument(
+        ..., help="Root directory containing the dataset to split"
+    ),
+    output: Path = typer.Option(
+        Path("split_manifest.json"),
+        "--output",
+        help="Output path for the split manifest JSON",
+    ),
+    train_ratio: float = typer.Option(0.7, "--train-ratio", help="Train ratio"),
+    val_ratio: float = typer.Option(0.15, "--val-ratio", help="Validation ratio"),
+    test_ratio: float = typer.Option(0.15, "--test-ratio", help="Test ratio"),
+    seed: int = typer.Option(42, "--seed", help="Random seed for deterministic splits"),
+    dataset_name: str | None = typer.Option(
+        None,
+        "--dataset-name",
+        help="Friendly dataset name to embed in the manifest",
+    ),
+    dataset_version: str = typer.Option(
+        "v1", "--dataset-version", help="Dataset version string"
+    ),
+) -> None:
+    """Create a deterministic train/val/test split manifest."""
+    try:
+        image_paths = collect_supported_images(dataset_root)
+    except ValueError as exc:
+        console.print(f"[red]Error:[/red] {exc}")
+        raise typer.Exit(1) from exc
+
+    resolved_name = dataset_name or dataset_root.name
+    try:
+        splits = create_random_split(
+            image_paths,
+            train_ratio=train_ratio,
+            val_ratio=val_ratio,
+            test_ratio=test_ratio,
+            random_seed=seed,
+            dataset_name=resolved_name,
+            dataset_version=dataset_version,
+            dataset_root=dataset_root,
+        )
+        validate_no_overlap(splits)
+        save_split_manifest(splits, output)
+    except ValueError as exc:
+        console.print(f"[red]Error:[/red] {exc}")
+        raise typer.Exit(1) from exc
+
+    console.print(
+        f"[green]Saved split manifest[/green] to {output} "
+        f"(train={len(splits[SplitType.TRAIN].image_ids)}, "
+        f"val={len(splits[SplitType.VALIDATION].image_ids)}, "
+        f"test={len(splits[SplitType.TEST].image_ids)})"
+    )
+
+
+@split_app.command("validate")
+def split_validate(manifest: Path = typer.Argument(..., help="Split manifest path")):
+    """Validate that a split manifest is well-formed and non-overlapping."""
+    try:
+        splits = load_split_manifest(manifest)
+        validate_no_overlap(splits)
+    except Exception as exc:  # noqa: BLE001
+        console.print(f"[red]Invalid manifest:[/red] {exc}")
+        raise typer.Exit(1) from exc
+
+    console.print("[green]Split manifest is valid and non-overlapping.[/green]")
+    for split_type, meta in splits.items():
+        console.print(
+            f"- {split_type.value}: {len(meta.image_ids)} images "
+            f"(dataset={meta.dataset_name} v{meta.dataset_version})"
+        )
 
 
 @app.command()
@@ -634,6 +726,16 @@ def benchmark(
     recursive: bool = typer.Option(
         False, "--recursive", help="Benchmark nested directories recursively"
     ),
+    split_manifest: Path = typer.Option(
+        ...,
+        "--split-manifest",
+        help="Split manifest JSON describing train/val/test assignments",
+    ),
+    split_type: str = typer.Option(
+        "test",
+        "--split-type",
+        help="Which split to benchmark: train, val, test, or dev",
+    ),
     report: Path | None = typer.Option(
         None,
         "--report",
@@ -651,6 +753,22 @@ def benchmark(
     if not profile_names:
         console.print("[red]Error:[/red] At least one profile is required.")
         raise typer.Exit(1)
+    try:
+        requested_split = SplitType(split_type.lower())
+    except ValueError as exc:
+        console.print("[red]Error:[/red] split-type must be train, val, test, or dev.")
+        raise typer.Exit(1) from exc
+    try:
+        split_manifest_map = load_split_manifest(split_manifest)
+        try:
+            split_metadata = split_manifest_map[requested_split]
+        except KeyError as exc:
+            raise KeyError(
+                f"Split '{requested_split.value}' not found in {split_manifest}"
+            ) from exc
+    except Exception as exc:  # noqa: BLE001
+        console.print(f"[red]Error loading split manifest:[/red] {exc}")
+        raise typer.Exit(1) from exc
 
     with Progress(
         SpinnerColumn(),
@@ -668,16 +786,24 @@ def benchmark(
                     input_path,
                     profiles=profile_names,
                     recursive=recursive,
+                    split_metadata=split_metadata,
                 )
             else:
                 summary = service.benchmark_file(
                     input_path,
                     profiles=profile_names,
+                    split_metadata=split_metadata,
                 )
         except ValueError as exc:
             console.print(f"[red]Error:[/red] {exc}")
             raise typer.Exit(1) from exc
         progress.update(task, completed=True, description="Benchmark completed")
+
+    if split_metadata.split_type != SplitType.TEST:
+        console.print(
+            f"[yellow]Warning:[/yellow] Benchmarking on '{split_metadata.split_type.value}' split. "
+            "Use TEST for final reporting."
+        )
 
     console.print(_render_profile_summary_table(summary.profile_summaries))
 

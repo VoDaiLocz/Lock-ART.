@@ -7,6 +7,7 @@ from pathlib import Path
 from PIL import Image
 from typer.testing import CliRunner
 
+from auralock.benchmarks.splits import SplitMetadata, SplitType, save_split_manifest
 from auralock.cli import app
 
 from .test_pipeline import RecordingClassifier
@@ -16,6 +17,19 @@ from .test_stylecloak import DummyStyleFeatureExtractor
 def _create_image(path: Path, color: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     Image.new("RGB", (64, 48), color=color).save(path)
+
+
+def _make_split_metadata(image_paths: list[Path]) -> SplitMetadata:
+    return SplitMetadata(
+        split_type=SplitType.TEST,
+        dataset_name="tmp",
+        dataset_version="v1",
+        split_method="manual",
+        split_ratio={"train": 0.0, "val": 0.0, "test": 1.0},
+        random_seed=123,
+        dataset_root=str(image_paths[0].parent),
+        image_ids=[str(path.resolve()) for path in image_paths],
+    )
 
 
 def test_protection_service_benchmark_directory_summarizes_profiles(tmp_path: Path):
@@ -34,6 +48,7 @@ def test_protection_service_benchmark_directory_summarizes_profiles(tmp_path: Pa
     summary = service.benchmark_directory(
         input_dir,
         profiles=("safe", "balanced"),
+        split_metadata=_make_split_metadata([input_dir / "a.png", input_dir / "b.png"]),
     )
 
     assert summary.image_count == 2
@@ -67,14 +82,16 @@ def test_benchmark_cli_writes_report(monkeypatch, tmp_path: Path):
             }
 
     class FakeService:
-        def benchmark_directory(self, input_path, **kwargs):
+        def benchmark_directory(self, input_path, *, split_metadata, **kwargs):
             calls["input_path"] = input_path
             calls["kwargs"] = kwargs
+            calls["split_metadata"] = split_metadata
             return FakeSummary()
 
-        def benchmark_file(self, input_path, **kwargs):
+        def benchmark_file(self, input_path, *, split_metadata, **kwargs):
             calls["input_path"] = input_path
             calls["kwargs"] = kwargs
+            calls["split_metadata"] = split_metadata
             return FakeSummary()
 
     monkeypatch.setattr("auralock.cli.ProtectionService", FakeService)
@@ -83,6 +100,9 @@ def test_benchmark_cli_writes_report(monkeypatch, tmp_path: Path):
     input_dir = tmp_path / "input"
     input_dir.mkdir()
     report_path = tmp_path / "benchmark.json"
+    manifest_path = tmp_path / "split.json"
+    metadata = _make_split_metadata([input_dir / "a.png"])
+    save_split_manifest({SplitType.TEST: metadata}, manifest_path)
 
     result = runner.invoke(
         app,
@@ -91,6 +111,8 @@ def test_benchmark_cli_writes_report(monkeypatch, tmp_path: Path):
             str(input_dir),
             "--profiles",
             "safe,balanced",
+            "--split-manifest",
+            str(manifest_path),
             "--report",
             str(report_path),
         ],
@@ -101,3 +123,4 @@ def test_benchmark_cli_writes_report(monkeypatch, tmp_path: Path):
     assert report_path.exists()
     assert calls["input_path"] == input_dir
     assert calls["kwargs"]["profiles"] == ("safe", "balanced")
+    assert calls["split_metadata"].split_type == SplitType.TEST
