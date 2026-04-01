@@ -315,7 +315,9 @@ class AntiDreamBoothSubjectBenchmarkHarness:
 
         notes = [
             "This benchmark follows the Anti-DreamBooth paper-style set_A/set_B/set_C split.",
-            "set_A is retained as a clean reference split, set_B is treated as the published split, and set_C is preserved as holdout metadata.",
+            "set_A is retained as a clean reference split, set_B is treated as the published (training) split, "
+            "and set_C is the held-out validation split used to measure out-of-sample protection effectiveness.",
+            "Evaluate mimicry success on set_C (holdout) images—never on set_B—to avoid in-sample bias.",
             "AuraLock still uses its own protection pipeline; this workflow is a benchmark alignment layer, not an ASPL/FSMG reproduction.",
         ]
 

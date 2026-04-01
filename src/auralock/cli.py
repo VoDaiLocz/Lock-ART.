@@ -26,7 +26,13 @@ from auralock.benchmarks import (
     AntiDreamBoothSubjectBenchmarkHarness,
     DockerLoraBenchmarkConfig,
     LoraBenchmarkHarness,
+    SplitMetadata,
+    SplitType,
     build_docker_lora_benchmark_plan,
+    create_random_split,
+    load_split_manifest,
+    save_split_manifest,
+    validate_split_manifest,
 )
 from auralock.core.image import save_image
 from auralock.services import (
@@ -41,6 +47,13 @@ app = typer.Typer(
     add_completion=False,
 )
 console = Console()
+
+split_app = typer.Typer(
+    name="split",
+    help="Dataset split management for reproducible benchmark evaluation.",
+    add_completion=False,
+)
+app.add_typer(split_app, name="split")
 
 
 def _to_builtin(value: Any) -> Any:
@@ -634,6 +647,18 @@ def benchmark(
     recursive: bool = typer.Option(
         False, "--recursive", help="Benchmark nested directories recursively"
     ),
+    split_manifest: Path | None = typer.Option(
+        None,
+        "--split-manifest",
+        help="Path to a JSON split manifest (from 'auralock split create'). "
+        "When provided, only images in the declared split are benchmarked.",
+    ),
+    split_type: str = typer.Option(
+        "test",
+        "--split-type",
+        help="Split to use from the manifest: train, val, test, or dev. "
+        "Using a non-test split emits a bias warning.",
+    ),
     report: Path | None = typer.Option(
         None,
         "--report",
@@ -652,6 +677,42 @@ def benchmark(
         console.print("[red]Error:[/red] At least one profile is required.")
         raise typer.Exit(1)
 
+    resolved_split_metadata: SplitMetadata | None = None
+    if split_manifest is not None:
+        try:
+            all_splits = load_split_manifest(split_manifest)
+        except FileNotFoundError as exc:
+            console.print(f"[red]Error:[/red] {exc}")
+            raise typer.Exit(1) from exc
+        except (json.JSONDecodeError, KeyError, ValueError) as exc:
+            console.print(f"[red]Error:[/red] Could not parse split manifest: {exc}")
+            raise typer.Exit(1) from exc
+
+        try:
+            requested_type = SplitType(split_type)
+        except ValueError as exc:
+            valid = ", ".join(t.value for t in SplitType)
+            console.print(
+                f"[red]Error:[/red] Invalid --split-type '{split_type}'. "
+                f"Valid values: {valid}"
+            )
+            raise typer.Exit(1) from exc
+
+        if requested_type not in all_splits:
+            console.print(
+                f"[red]Error:[/red] Split type '{split_type}' not found in manifest. "
+                f"Available: {', '.join(k.value for k in all_splits)}"
+            )
+            raise typer.Exit(1)
+
+        resolved_split_metadata = all_splits[requested_type]
+        if requested_type != SplitType.TEST:
+            console.print(
+                f"[yellow]⚠ WARNING:[/yellow] Benchmarking on '{split_type}' split. "
+                "Results may be overfit to this split. "
+                "Use --split-type test for final evaluation."
+            )
+
     with Progress(
         SpinnerColumn(),
         TextColumn("[progress.description]{task.description}"),
@@ -668,11 +729,13 @@ def benchmark(
                     input_path,
                     profiles=profile_names,
                     recursive=recursive,
+                    split_metadata=resolved_split_metadata,
                 )
             else:
                 summary = service.benchmark_file(
                     input_path,
                     profiles=profile_names,
+                    split_metadata=resolved_split_metadata,
                 )
         except ValueError as exc:
             console.print(f"[red]Error:[/red] {exc}")
@@ -680,6 +743,13 @@ def benchmark(
         progress.update(task, completed=True, description="Benchmark completed")
 
     console.print(_render_profile_summary_table(summary.profile_summaries))
+
+    if resolved_split_metadata is not None:
+        console.print(
+            f"[dim]Split: {resolved_split_metadata.split_type.value} | "
+            f"Images: {len(resolved_split_metadata.image_ids)} | "
+            f"Hash: {resolved_split_metadata.split_hash}[/dim]"
+        )
 
     # Print prominent warning about protection scores in benchmark summary
     from auralock.core.metrics import (
@@ -1162,6 +1232,120 @@ def benchmark_lora_docker(
             f"(exit code {exc.returncode})."
         )
         raise typer.Exit(exc.returncode or 1) from exc
+
+
+@split_app.command("create")
+def split_create(
+    dataset_dir: Path = typer.Argument(
+        ..., help="Directory containing images to split"
+    ),
+    output: Path = typer.Option(
+        ..., "--output", help="Path to write the JSON split manifest"
+    ),
+    dataset_name: str = typer.Option(
+        "dataset", "--dataset-name", help="Human-readable dataset name"
+    ),
+    dataset_version: str = typer.Option(
+        "1.0", "--dataset-version", help="Dataset version string"
+    ),
+    train_ratio: float = typer.Option(
+        0.7, "--train-ratio", help="Fraction of images for the train split"
+    ),
+    val_ratio: float = typer.Option(
+        0.15, "--val-ratio", help="Fraction of images for the validation split"
+    ),
+    test_ratio: float = typer.Option(
+        0.15, "--test-ratio", help="Fraction of images for the test split"
+    ),
+    seed: int = typer.Option(42, "--seed", help="Random seed for reproducibility"),
+    recursive: bool = typer.Option(
+        False, "--recursive", help="Scan sub-directories for images"
+    ),
+) -> None:
+    """Create a train/val/test split manifest from a dataset directory."""
+    from auralock.core.image import SUPPORTED_EXTENSIONS
+
+    if not dataset_dir.exists() or not dataset_dir.is_dir():
+        console.print(f"[red]Error:[/red] Dataset directory not found: {dataset_dir}")
+        raise typer.Exit(1)
+
+    iterator = dataset_dir.rglob("*") if recursive else dataset_dir.glob("*")
+    image_paths = [
+        p
+        for p in sorted(iterator)
+        if p.is_file() and p.suffix.lower() in SUPPORTED_EXTENSIONS
+    ]
+    if not image_paths:
+        console.print(f"[red]Error:[/red] No supported images found in: {dataset_dir}")
+        raise typer.Exit(1)
+
+    try:
+        splits = create_random_split(
+            image_paths,
+            dataset_name=dataset_name,
+            dataset_version=dataset_version,
+            train_ratio=train_ratio,
+            val_ratio=val_ratio,
+            test_ratio=test_ratio,
+            random_seed=seed,
+        )
+    except ValueError as exc:
+        console.print(f"[red]Error:[/red] {exc}")
+        raise typer.Exit(1) from exc
+
+    save_split_manifest(splits, output)
+
+    table = Table(title="Split Manifest Summary")
+    table.add_column("Split", style="cyan")
+    table.add_column("Images", style="green")
+    table.add_column("Ratio", style="yellow")
+    table.add_column("Hash", style="magenta")
+    for split_type, split_meta in splits.items():
+        table.add_row(
+            split_type.value,
+            str(len(split_meta.image_ids)),
+            f"{split_meta.split_ratio.get(split_type.value, 0):.2f}",
+            split_meta.split_hash,
+        )
+    console.print(table)
+    console.print(f"[green]Split manifest saved to:[/green] {output}")
+
+
+@split_app.command("validate")
+def split_validate(
+    manifest: Path = typer.Argument(..., help="Path to the JSON split manifest"),
+) -> None:
+    """Validate a split manifest for data leakage and hash integrity."""
+    try:
+        splits = load_split_manifest(manifest)
+    except FileNotFoundError as exc:
+        console.print(f"[red]Error:[/red] {exc}")
+        raise typer.Exit(1) from exc
+    except (json.JSONDecodeError, KeyError, ValueError) as exc:
+        console.print(f"[red]Error:[/red] Could not parse split manifest: {exc}")
+        raise typer.Exit(1) from exc
+
+    issues = validate_split_manifest(splits)
+
+    table = Table(title="Split Validation")
+    table.add_column("Split", style="cyan")
+    table.add_column("Images", style="green")
+    table.add_column("Hash", style="magenta")
+    for split_type, split_meta in splits.items():
+        table.add_row(
+            split_type.value,
+            str(len(split_meta.image_ids)),
+            split_meta.split_hash,
+        )
+    console.print(table)
+
+    if issues:
+        for issue in issues:
+            console.print(f"[red]Issue:[/red] {issue}")
+        console.print(f"[red]{len(issues)} validation issue(s) found.[/red]")
+        raise typer.Exit(1)
+    else:
+        console.print("[green]✓ No issues found. Split manifest is valid.[/green]")
 
 
 @app.command()
