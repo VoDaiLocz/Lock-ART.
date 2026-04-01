@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import warnings
 from dataclasses import dataclass
 from pathlib import Path
 from time import perf_counter
@@ -27,6 +28,7 @@ from auralock.core.metrics import (
 )
 from auralock.core.pipeline import load_default_model, resolve_device
 from auralock.core.profiles import ProtectionConfig, resolve_protection_config
+from auralock.core.splits import SplitMetadata, warn_non_test_split
 from auralock.core.style import load_default_style_feature_extractor
 
 
@@ -200,6 +202,7 @@ class BenchmarkSummary:
     image_count: int
     entries: list[BenchmarkEntry]
     profile_summaries: dict[str, dict[str, object]]
+    split_metadata: SplitMetadata | None = None
 
     def to_report_dict(self) -> dict[str, object]:
         """Serialize the full benchmark report."""
@@ -209,6 +212,11 @@ class BenchmarkSummary:
                 "image_count": self.image_count,
                 "entries": [entry.to_report_dict() for entry in self.entries],
                 "profile_summaries": self.profile_summaries,
+                "split_metadata": (
+                    self.split_metadata.to_dict()
+                    if self.split_metadata is not None
+                    else None
+                ),
                 "validation_metadata": {
                     "is_validated": False,
                     "validation_status": "not_validated",
@@ -718,6 +726,7 @@ class ProtectionService:
         *,
         input_path: Path,
         profiles: tuple[str, ...],
+        split_metadata: SplitMetadata | None = None,
     ) -> BenchmarkSummary:
         """Benchmark the requested profiles on a list of images."""
         if not image_paths:
@@ -774,6 +783,7 @@ class ProtectionService:
             image_count=len(image_paths),
             entries=entries,
             profile_summaries=profile_summaries,
+            split_metadata=split_metadata,
         )
 
     def benchmark_file(
@@ -781,17 +791,45 @@ class ProtectionService:
         input_path: str | Path,
         *,
         profiles: tuple[str, ...] = ("safe", "balanced", "strong"),
+        split_metadata: SplitMetadata | None = None,
     ) -> BenchmarkSummary:
-        """Benchmark one image against multiple named profiles."""
+        """Benchmark one image against multiple named profiles.
+
+        Parameters
+        ----------
+        input_path:
+            Path to the image to benchmark.
+        profiles:
+            Named protection profiles to evaluate.
+        split_metadata:
+            Optional split context. When provided the image is validated against
+            the declared split and a :class:`UserWarning` is raised when the
+            split type is not :attr:`SplitType.TEST`.
+        """
         candidate = Path(input_path)
         if not candidate.exists() or not candidate.is_file():
             raise ValueError("input_path must be an existing image file.")
         if candidate.suffix.lower() not in SUPPORTED_EXTENSIONS:
             raise ValueError("input_path must point to a supported image file.")
+
+        if split_metadata is not None:
+            split_ids = set(split_metadata.image_ids)
+            if (
+                str(candidate) not in split_ids
+                and str(candidate.resolve()) not in split_ids
+            ):
+                raise ValueError(
+                    f"Image '{candidate}' is not in the declared "
+                    f"'{split_metadata.split_type.value}' split. "
+                    "Benchmarking an image outside its split may cause data leakage."
+                )
+            warn_non_test_split(split_metadata.split_type)
+
         return self._collect_benchmark_entries(
             [candidate],
             input_path=candidate,
             profiles=profiles,
+            split_metadata=split_metadata,
         )
 
     def benchmark_directory(
@@ -800,8 +838,23 @@ class ProtectionService:
         *,
         profiles: tuple[str, ...] = ("safe", "balanced", "strong"),
         recursive: bool = False,
+        split_metadata: SplitMetadata | None = None,
     ) -> BenchmarkSummary:
-        """Benchmark all supported images in a directory across profiles."""
+        """Benchmark all supported images in a directory across profiles.
+
+        Parameters
+        ----------
+        input_dir:
+            Directory containing images to benchmark.
+        profiles:
+            Named protection profiles to evaluate.
+        recursive:
+            When True, scan sub-directories as well.
+        split_metadata:
+            Optional split context. When provided only images whose paths are
+            listed in the split are benchmarked, and a :class:`UserWarning` is
+            raised when the split type is not :attr:`SplitType.TEST`.
+        """
         input_path = Path(input_dir)
         if not input_path.exists() or not input_path.is_dir():
             raise ValueError("input_dir must be an existing directory.")
@@ -812,10 +865,30 @@ class ProtectionService:
             for candidate in sorted(iterator)
             if candidate.is_file() and candidate.suffix.lower() in SUPPORTED_EXTENSIONS
         ]
+
+        if split_metadata is not None:
+            split_ids = set(split_metadata.image_ids)
+            filtered = [
+                p
+                for p in image_paths
+                if str(p) in split_ids or str(p.resolve()) in split_ids
+            ]
+            excluded = len(image_paths) - len(filtered)
+            if excluded > 0:
+                warnings.warn(
+                    f"{excluded} image(s) in '{input_path}' were excluded because "
+                    f"they are not part of the declared '{split_metadata.split_type.value}' split.",
+                    UserWarning,
+                    stacklevel=2,
+                )
+            image_paths = filtered
+            warn_non_test_split(split_metadata.split_type)
+
         return self._collect_benchmark_entries(
             image_paths,
             input_path=input_path,
             profiles=profiles,
+            split_metadata=split_metadata,
         )
 
     def protect_directory(

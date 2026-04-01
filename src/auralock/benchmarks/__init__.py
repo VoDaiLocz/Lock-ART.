@@ -28,8 +28,26 @@ from auralock.benchmarks.lora import (
     build_lora_train_command,
     evaluate_lora_preflight,
 )
+from auralock.benchmarks.splits import (
+    SplitMetadata,
+    SplitType,
+    compute_split_hash,
+    create_random_split,
+    load_split_manifest,
+    save_split_manifest,
+    validate_split_manifest,
+    warn_non_test_split,
+)
 
 __all__ = [
+    "SplitMetadata",
+    "SplitType",
+    "compute_split_hash",
+    "create_random_split",
+    "load_split_manifest",
+    "save_split_manifest",
+    "validate_split_manifest",
+    "warn_non_test_split",
     "DEFAULT_ANTI_DREAMBOOTH_CLASS_PROMPT",
     "DEFAULT_ANTI_DREAMBOOTH_INFER_SCRIPT",
     "DEFAULT_ANTI_DREAMBOOTH_INSTANCE_PROMPT",
