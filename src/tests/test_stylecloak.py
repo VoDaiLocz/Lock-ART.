@@ -149,3 +149,167 @@ def test_protection_service_stylecloak_returns_protection_report():
     assert result.original_prediction is None
     assert result.adversarial_prediction is None
     assert result.attack_success is None
+
+
+def test_jpeg_compress_decompress_preserves_shape_and_bounds():
+    """JPEG compression should preserve image shape and valid pixel range."""
+    from auralock.core.style import jpeg_compress_decompress
+
+    images = torch.rand(2, 3, 64, 64)
+
+    for quality in [95, 85, 75, 50]:
+        compressed = jpeg_compress_decompress(images, quality=quality)
+        assert compressed.shape == images.shape
+        assert compressed.min().item() >= 0.0
+        assert compressed.max().item() <= 1.0
+
+
+def test_jpeg_compress_decompress_introduces_artifacts():
+    """JPEG compression at lower quality should introduce noticeable differences."""
+    from auralock.core.style import jpeg_compress_decompress
+
+    torch.manual_seed(42)
+    images = torch.rand(1, 3, 64, 64)
+
+    compressed_high = jpeg_compress_decompress(images, quality=95)
+    compressed_low = jpeg_compress_decompress(images, quality=50)
+
+    # Lower quality should introduce more artifacts
+    diff_high = (images - compressed_high).abs().mean()
+    diff_low = (images - compressed_low).abs().mean()
+
+    assert diff_low > diff_high
+
+
+def test_center_crop_and_resize_preserves_shape():
+    """Center crop should restore original dimensions after cropping."""
+    from auralock.core.style import center_crop_and_resize
+
+    images = torch.rand(2, 3, 64, 64)
+
+    for crop_ratio in [0.9, 0.8, 0.5]:
+        cropped = center_crop_and_resize(images, crop_ratio=crop_ratio)
+        assert cropped.shape == images.shape
+        assert cropped.min().item() >= 0.0
+        assert cropped.max().item() <= 1.0
+
+
+def test_center_crop_removes_border_information():
+    """Center crop should remove border pixels and resize back."""
+    from auralock.core.style import center_crop_and_resize
+
+    # Create image with distinct border
+    images = torch.zeros(1, 3, 64, 64)
+    images[:, :, 10:54, 10:54] = 1.0  # White center, black border
+
+    cropped = center_crop_and_resize(images, crop_ratio=0.8)
+
+    # After center crop at 0.8, the border should be mostly removed
+    # The reconstructed image should have more white than the original
+    assert cropped.mean() > images.mean()
+
+
+def test_random_crop_and_resize_preserves_shape():
+    """Random crop should restore original dimensions after cropping."""
+    from auralock.core.style import random_crop_and_resize
+
+    images = torch.rand(2, 3, 64, 64)
+
+    for crop_ratio in [0.9, 0.8]:
+        cropped = random_crop_and_resize(images, crop_ratio=crop_ratio)
+        assert cropped.shape == images.shape
+        assert cropped.min().item() >= 0.0
+        assert cropped.max().item() <= 1.0
+
+
+def test_color_jitter_preserves_shape_and_bounds():
+    """Color jitter should preserve image shape and valid pixel range."""
+    from auralock.core.style import color_jitter
+
+    torch.manual_seed(42)
+    images = torch.rand(2, 3, 64, 64)
+
+    jittered = color_jitter(
+        images, brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1
+    )
+    assert jittered.shape == images.shape
+    assert jittered.min().item() >= 0.0
+    assert jittered.max().item() <= 1.0
+
+
+def test_color_jitter_modifies_image():
+    """Color jitter should produce different output than input."""
+    from auralock.core.style import color_jitter
+
+    torch.manual_seed(42)
+    images = torch.rand(1, 3, 64, 64)
+
+    jittered = color_jitter(images, brightness=0.2, contrast=0.2)
+
+    # Should modify the image
+    diff = (images - jittered).abs().mean()
+    assert diff > 0.001
+
+
+def test_add_gaussian_noise_preserves_shape_and_bounds():
+    """Gaussian noise injection should preserve image shape and valid pixel range."""
+    from auralock.core.style import add_gaussian_noise
+
+    torch.manual_seed(42)
+    images = torch.rand(2, 3, 64, 64)
+
+    for std in [0.01, 0.03, 0.05]:
+        noisy = add_gaussian_noise(images, std=std)
+        assert noisy.shape == images.shape
+        assert noisy.min().item() >= 0.0
+        assert noisy.max().item() <= 1.0
+
+
+def test_add_gaussian_noise_increases_variance():
+    """Gaussian noise should increase image variance."""
+    from auralock.core.style import add_gaussian_noise
+
+    torch.manual_seed(42)
+    images = torch.ones(1, 3, 64, 64) * 0.5  # Constant image
+
+    noisy = add_gaussian_noise(images, std=0.03)
+
+    # Noisy image should have higher variance
+    assert noisy.var() > images.var()
+
+
+def test_build_style_transform_suite_includes_new_transforms():
+    """Transform suite should include critical preprocessing transforms."""
+    from auralock.core.style import build_style_transform_suite
+
+    suite = build_style_transform_suite()
+    transform_names = [name for name, _ in suite]
+
+    # Check for new critical transforms
+    assert "jpeg_quality_95" in transform_names
+    assert "jpeg_quality_85" in transform_names
+    assert "jpeg_quality_75" in transform_names
+    assert "center_crop_90" in transform_names
+    assert "center_crop_80" in transform_names
+    assert "gaussian_blur_medium" in transform_names
+    assert "color_jitter_mild" in transform_names
+    assert "gaussian_noise_small" in transform_names
+
+    # Check backward compatibility - old names should still exist
+    assert "gaussian_blur_mild" in transform_names
+    assert "resize_restore_75" in transform_names
+    assert "resize_restore_50" in transform_names
+
+
+def test_all_transforms_in_suite_are_callable():
+    """All transforms in the suite should be callable and process images correctly."""
+    from auralock.core.style import build_style_transform_suite
+
+    suite = build_style_transform_suite()
+    images = torch.rand(1, 3, 64, 64)
+
+    for name, transform in suite:
+        result = transform(images)
+        assert result.shape == images.shape, f"Transform {name} changed shape"
+        assert result.min().item() >= 0.0, f"Transform {name} produced negative values"
+        assert result.max().item() <= 1.0, f"Transform {name} produced values > 1.0"
