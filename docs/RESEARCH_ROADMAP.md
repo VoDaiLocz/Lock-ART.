@@ -46,9 +46,13 @@ Xây dựng và đánh giá phương pháp bảo vệ artwork theo hướng:
 - Tăng độ tin cậy CI cho các luồng benchmark khô (dry-run)
 
 ### Giai đoạn 3 (dài hạn: 2-3 tháng)
+- **⚠️ YÊU CẦU QUAN TRỌNG: Xác thực GPU là bắt buộc cho giai đoạn này**
 - Chạy benchmark thực tế trên GPU (LoRA/DreamBooth)
 - Tổng hợp kết quả có kiểm định cơ bản
 - Đề xuất hướng cải tiến objective dựa trên dữ liệu thực nghiệm
+- **Lưu ý:** Tất cả các số liệu proxy hiện tại CHƯA được xác thực với các cuộc tấn công thực tế
+- **Mục tiêu chính:** Thiết lập mối tương quan giữa protection score proxy và hiệu quả bảo vệ thực tế
+- **Xem chi tiết:** [VALIDATION_RESULTS.md](VALIDATION_RESULTS.md)
 
 ---
 
@@ -56,6 +60,8 @@ Xây dựng và đánh giá phương pháp bảo vệ artwork theo hướng:
 
 - **CPU workflow**: đủ cho protect/analyze/batch cơ bản và benchmark dry-run
 - **GPU workflow**: cần cho benchmark huấn luyện thực tế LoRA/DreamBooth
+  - **⚠️ Chưa có kết quả xác thực:** Hiện tại tất cả số liệu đều là proxy, chưa có validation thực tế trên GPU
+  - GPU là yêu cầu bắt buộc để xác thực hiệu quả bảo vệ thực tế (Giai đoạn 3)
 - **Container workflow**: ưu tiên Docker benchmark runtime để giảm sai lệch môi trường
 
 ---
@@ -75,4 +81,5 @@ Mỗi vòng lặp nên có:
 
 - `README.md`: hướng dẫn sử dụng và snapshot kết quả hiện tại
 - `docs/PRODUCT_AUDIT.md`: bối cảnh cải tiến sản phẩm và các gap còn lại
+- `docs/VALIDATION_RESULTS.md`: **Trạng thái xác thực và hạn chế hiện tại** (quan trọng)
 - `notebooks/AuraLock_LoRA_Benchmark_Colab.ipynb`: notebook benchmark trên Colab/GPU

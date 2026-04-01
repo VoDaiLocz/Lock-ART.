@@ -47,18 +47,32 @@ The repository is organized around a practical study loop:
 
 ## Current Study Snapshot
 
-> **⚠️ Important Note on Protection Score:**
-> The `Protection Score` is a **proxy metric** that measures drift in ResNet18 feature space. It is **NOT validated** against real-world mimicry attacks like DreamBooth or LoRA. This score is useful for relative comparisons within this repository only, not as a universal guarantee of protection effectiveness. Real-world effectiveness has not been empirically validated.
+> **⚠️ CRITICAL: Metrics Not Validated Against Real Attacks**
+>
+> All protection metrics in AuraLock are **PROXY MEASUREMENTS** and have **NOT been validated** against real-world attacks like DreamBooth or LoRA fine-tuning.
+>
+> **The `Protection Score` measures:**
+> - Drift in ResNet18 feature space under transforms
+> - Useful ONLY for relative comparisons within this repository
+>
+> **The `Protection Score` does NOT measure:**
+> - ❌ Actual prevention of style mimicry
+> - ❌ Real DreamBooth/LoRA training outcomes
+> - ❌ Protection against production AI systems
+>
+> **Status:** Awaiting Phase 3 GPU validation (see [VALIDATION_RESULTS.md](docs/VALIDATION_RESULTS.md))
+>
+> Use these metrics for research and comparison purposes only. Do not interpret scores as guarantees of protection effectiveness.
 
 Current local report highlights:
 
-| Run | Protection Score | PSNR | SSIM | Notes |
-|-----|------------------|------|------|-------|
-| `balanced` | `42.1` | `36.24` | `0.9346` | better visual quality, good study baseline |
-| `subject` | `51.5` | `30.53` | `0.8270` | stronger drift for subject-style protection experiments |
-| `fortress` | `53.2` | `29.08` | `0.7858` | more aggressive, visibly harsher output |
-| `blindfold` | `61.1` | `26.53` | `0.6114` | strongest current anti-readability preset, largest fidelity cost |
-| `collective n000050 / set_B` | `22.8` avg | `37.78` avg | `0.9666` avg | correct benchmark direction, objective still needs tuning |
+| Run | Protection Score (⚠️ Proxy) | PSNR | SSIM | Validation | Notes |
+|-----|---------------------------|------|------|------------|-------|
+| `balanced` | `42.1` | `36.24` | `0.9346` | ❌ Not validated | better visual quality, good study baseline |
+| `subject` | `51.5` | `30.53` | `0.8270` | ❌ Not validated | stronger drift for subject-style protection experiments |
+| `fortress` | `53.2` | `29.08` | `0.7858` | ❌ Not validated | more aggressive, visibly harsher output |
+| `blindfold` | `61.1` | `26.53` | `0.6114` | ❌ Not validated | strongest current anti-readability preset, largest fidelity cost |
+| `collective n000050 / set_B` | `22.8` avg | `37.78` avg | `0.9666` avg | ❌ Not validated | correct benchmark direction, objective still needs tuning |
 
 ## Workflow
 
@@ -217,6 +231,7 @@ Lock-ART./
 
 ## Notes and Documentation
 
+- [Validation Results](docs/VALIDATION_RESULTS.md) - **Critical:** Current validation status and limitations
 - [Product Audit](docs/PRODUCT_AUDIT.md)
 - [Implementation Plan](docs/IMPLEMENTATION_PLAN.md)
 - [Research Roadmap](docs/RESEARCH_ROADMAP.md)
