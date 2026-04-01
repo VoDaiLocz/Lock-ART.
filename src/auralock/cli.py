@@ -82,7 +82,7 @@ def _render_quality_table(report: dict[str, object]) -> Table:
 
 
 def _render_readability_table(report: dict[str, object]) -> Table:
-    table = Table(title="Protection Readability")
+    table = Table(title="Protection Readability (⚠️ PROXY - NOT VALIDATED)")
     table.add_column("Metric", style="cyan")
     table.add_column("Value", style="green")
 
@@ -93,10 +93,11 @@ def _render_readability_table(report: dict[str, object]) -> Table:
         f"{report['robust_style_similarity']:.4f}",
     )
     table.add_row(
-        "Protection score",
+        "Protection score (proxy)",
         f"{report['protection_score']:.1f}/100",
     )
     table.add_row("Assessment", str(report["assessment"]))
+    table.add_row("Validation status", "❌ Not validated against real attacks")
 
     # Add warning row if present
     if "warning" in report:
@@ -176,12 +177,12 @@ def _render_batch_table(summary: BatchProtectionSummary) -> Table:
 def _render_profile_summary_table(
     profile_summaries: dict[str, dict[str, object]],
 ) -> Table:
-    table = Table(title="Profile Summary")
+    table = Table(title="Profile Summary (⚠️ Protection scores are proxy metrics)")
     table.add_column("Profile", style="cyan")
     table.add_column("Images", style="green")
     table.add_column("Avg PSNR", style="yellow")
     table.add_column("Avg SSIM", style="yellow")
-    table.add_column("Avg Protect", style="magenta")
+    table.add_column("Avg Protect (proxy)", style="magenta")
     table.add_column("Avg Runtime", style="green")
 
     for profile, summary in profile_summaries.items():

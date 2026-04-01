@@ -91,6 +91,13 @@ class ProtectionResult:
             "perturbation_linf": self.perturbation_linf,
             "device": self.device,
             "model_name": self.model_name,
+            "validation_metadata": {
+                "is_validated": False,
+                "validation_status": "not_validated",
+                "validation_method": None,
+                "validation_date": None,
+                "notes": "Protection metrics are proxy measurements not validated against real attacks like DreamBooth or LoRA.",
+            },
         }
         if output_path is not None:
             payload["output_path"] = output_path
@@ -136,6 +143,13 @@ class BatchProtectionSummary:
                 "failed_count": self.failed_count,
                 "outputs": self.outputs,
                 "failures": self.failures,
+                "validation_metadata": {
+                    "is_validated": False,
+                    "validation_status": "not_validated",
+                    "validation_method": None,
+                    "validation_date": None,
+                    "notes": "Protection metrics are proxy measurements not validated against real attacks like DreamBooth or LoRA.",
+                },
             }
         )
 
@@ -167,6 +181,13 @@ class BenchmarkEntry:
                 "runtime_sec": self.runtime_sec,
                 "quality_report": self.quality_report,
                 "protection_report": self.protection_report,
+                "validation_metadata": {
+                    "is_validated": False,
+                    "validation_status": "not_validated",
+                    "validation_method": None,
+                    "validation_date": None,
+                    "notes": "Protection metrics are proxy measurements not validated against real attacks like DreamBooth or LoRA.",
+                },
             }
         )
 
@@ -188,6 +209,13 @@ class BenchmarkSummary:
                 "image_count": self.image_count,
                 "entries": [entry.to_report_dict() for entry in self.entries],
                 "profile_summaries": self.profile_summaries,
+                "validation_metadata": {
+                    "is_validated": False,
+                    "validation_status": "not_validated",
+                    "validation_method": None,
+                    "validation_date": None,
+                    "notes": "Protection metrics are proxy measurements not validated against real attacks like DreamBooth or LoRA.",
+                },
             }
         )
 
